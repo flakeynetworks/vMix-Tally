@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">VMixTally</string>
+    <string name="saved_host">lastVmixHost</string>
+    <string name="settingstitle">vMix Tally</string>
 </resources>

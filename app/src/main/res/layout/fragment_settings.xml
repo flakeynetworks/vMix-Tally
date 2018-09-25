@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/background_dark"
+    android:background="@color/background"
     tools:context="uk.co.flakeynetworks.vmixtally.MainActivity">
 
     <LinearLayout
@@ -47,6 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:paddingTop="20dp"
             android:visibility="gone">
 
             <TextView
@@ -61,7 +62,8 @@
                 android:id="@+id/progressBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:indeterminateTint="@android:color/white" />
+                android:indeterminateTint="@android:color/white"
+                android:paddingTop="10dp" />
 
             <ImageView
                 android:id="@+id/tickImage"
@@ -84,6 +86,7 @@
             android:id="@+id/inputBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -97,13 +100,17 @@
             <Spinner
                 android:id="@+id/inputSpinner"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/spinner_background"
+                android:textColor="@color/foreground" />
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/nextBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -118,7 +125,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="false"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingTop="20dp"
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/imageView"
