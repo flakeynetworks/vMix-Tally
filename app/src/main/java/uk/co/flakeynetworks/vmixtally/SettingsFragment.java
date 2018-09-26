@@ -24,6 +24,7 @@ import java.util.List;
 
 import uk.co.flakeynetworks.vmix.VMixHost;
 import uk.co.flakeynetworks.vmix.api.TCPAPI;
+import uk.co.flakeynetworks.vmix.api.TCPAPIListener;
 import uk.co.flakeynetworks.vmix.status.VMixStatus;
 
 /**
@@ -109,6 +110,7 @@ public class SettingsFragment extends Fragment {
                 tcpConnection.close();
                 return;
             } // end of if
+
 
             // Show successful connect
             mainActivity.runOnUiThread(this::showSuccess);

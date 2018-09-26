@@ -44,7 +44,7 @@ public class TallyFragment extends Fragment {
         @Override
         public void inputRemoved() {
 
-            mainActivity.inputWasRemoved();
+            getActivity().runOnUiThread(() -> mainActivity.inputWasRemoved());
         } // end of inputRemoved
     };
 
