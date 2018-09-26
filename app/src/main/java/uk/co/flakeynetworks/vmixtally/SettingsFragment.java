@@ -24,7 +24,6 @@ import java.util.List;
 
 import uk.co.flakeynetworks.vmix.VMixHost;
 import uk.co.flakeynetworks.vmix.api.TCPAPI;
-import uk.co.flakeynetworks.vmix.api.TCPAPIListener;
 import uk.co.flakeynetworks.vmix.status.VMixStatus;
 
 /**
@@ -46,28 +45,25 @@ public class SettingsFragment extends Fragment {
 
         mainActivity = (MainActivity) getActivity();
 
+        // Set the address field
         addressField = view.findViewById(R.id.addressField);
         addressField.setText(mainActivity.getLastSavedHost());
 
         Button connectButton = view.findViewById(R.id.connectButton);
 
-        LinearLayout statusBox = view.findViewById(R.id.statusBox);
-
         // end of onClick
         connectButton.setOnClickListener(v -> {
 
             hideKeyboard();
-
-            // Disable the connect button
-            connectButton.setEnabled(false);
-
-            // Show the status box
-            statusBox.setVisibility(View.VISIBLE);
+            showConnecting();
 
             // Attempt to connect to the vmix instance
             new Thread(this::connectToHost).start();
         });
 
+
+        // Hides the keyboard
+        hideKeyboard();
 
         Button showTallyBtn = view.findViewById(R.id.showTallyBtn);
         showTallyBtn.setOnClickListener(v -> {
@@ -78,6 +74,19 @@ public class SettingsFragment extends Fragment {
 
         return view;
     } // end of onCreateView
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+
+        super.onViewCreated(view, savedInstanceState);
+
+        // See if we need to load from a previous state
+        if(mainActivity.getHost() != null && mainActivity.getTcpConnection() != null)
+            showSuccess();
+
+        if(mainActivity.isAttemptingToReconnect())
+            mainActivity.showReconnectingDialog();
+    } // end of onViewCreated
 
 
     private void connectToHost() {
@@ -111,12 +120,11 @@ public class SettingsFragment extends Fragment {
                 return;
             } // end of if
 
+            mainActivity.setHost(host);
+            mainActivity.setTcpConnection(tcpConnection);
 
             // Show successful connect
             mainActivity.runOnUiThread(this::showSuccess);
-
-            mainActivity.setHost(host);
-            mainActivity.setTcpConnection(tcpConnection);
         } catch (MalformedURLException e) {
 
             mainActivity.runOnUiThread(() -> showError("Invalid Address"));
@@ -125,6 +133,9 @@ public class SettingsFragment extends Fragment {
 
 
     private void showError(String message) {
+
+        LinearLayout statusBox = getView().findViewById(R.id.statusBox);
+        statusBox.setVisibility(View.VISIBLE);
 
         ImageView tick = getView().findViewById(R.id.tickImage);
         tick.setVisibility(View.GONE);
@@ -143,7 +154,32 @@ public class SettingsFragment extends Fragment {
     } // end of showError
 
 
+    private void showConnecting() {
+
+        LinearLayout statusBox = getView().findViewById(R.id.statusBox);
+        statusBox.setVisibility(View.VISIBLE);
+
+        ImageView tick = getView().findViewById(R.id.tickImage);
+        tick.setVisibility(View.GONE);
+
+        ImageView cross = getView().findViewById(R.id.crossImage);
+        cross.setVisibility(View.GONE);
+
+        ProgressBar progressbar = getView().findViewById(R.id.progressBar);
+        progressbar.setVisibility(View.VISIBLE);
+
+        TextView status = getView().findViewById(R.id.statusText);
+        status.setText(R.string.connectingToServer);
+
+        Button connectButton = getView().findViewById(R.id.connectButton);
+        connectButton.setEnabled(false);
+    } // end of showConnecting
+
+
     private void showSuccess() {
+
+        LinearLayout statusBox = getView().findViewById(R.id.statusBox);
+        statusBox.setVisibility(View.VISIBLE);
 
         ImageView tick = getView().findViewById(R.id.tickImage);
         tick.setVisibility(View.VISIBLE);

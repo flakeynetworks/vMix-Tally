@@ -1,17 +1,17 @@
 package uk.co.flakeynetworks.vmixtally;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import uk.co.flakeynetworks.vmix.VMixHost;
 import uk.co.flakeynetworks.vmix.api.TCPAPI;
@@ -21,10 +21,10 @@ import uk.co.flakeynetworks.vmix.status.Input;
 
 public class MainActivity extends AppCompatActivity {
 
-    private VMixHost host;
-    private TCPAPI tcpConnection;
-    private Input input;
-
+    private static VMixHost host;
+    private static TCPAPI tcpConnection;
+    private static Input input;
+    private static boolean attemptingReconnect = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,8 +33,11 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.layout_main);
 
-        // Load the settings fragment
-        loadSettingsFragment();
+        if(savedInstanceState == null) {
+
+            // Load the settings fragment
+            loadSettingsFragment();
+        } // end of if
     } // end of onCreate
 
 
@@ -44,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction transaction = manager.beginTransaction();
         transaction.replace(R.id.fragmentPlaceHolder, fragment);
 
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     } // end of loadFragment
 
 
@@ -59,9 +62,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void loadTallyFragment() {
-
-        // Set the title bar title
-        getSupportActionBar().setTitle("Tally: " + input.getName());  // provide compatibility to all the versions
 
         TallyFragment fragment = new TallyFragment();
         loadFragment(fragment);
@@ -130,11 +130,12 @@ public class MainActivity extends AppCompatActivity {
         else
             builder = new AlertDialog.Builder(this);
 
+        // end of onClick
         builder.setTitle("Input removed")
                 .setMessage(input.getName() + " was removed.")
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                    } // end of onClick
+                .setPositiveButton(R.string.ok, (dialog, which) -> {
+
+                    // TODO cancel the reconnect here
                 })
 
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -146,7 +147,6 @@ public class MainActivity extends AppCompatActivity {
 
         // end of cancel
         DialogInterface.OnCancelListener listener = dialog -> {
-
         };
 
         ReconnectingDialog dialog = new ReconnectingDialog(this, false, listener);
@@ -156,7 +156,36 @@ public class MainActivity extends AppCompatActivity {
 
     public void tcpConnectionClosed() {
 
+        tcpConnection = null;
+
+        attemptingReconnect = true;
         loadSettingsFragment();
-        showReconnectingDialog();
     } // end of tcpConnectionClosed
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(R.menu.actionbar_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    } // end of onCreateOptionsMenu
+
+
+    // handle button activities
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        if (id == R.id.settings)
+            loadSettingsFragment();
+
+        return super.onOptionsItemSelected(item);
+    } // end of onOptionsItemSelected
+
+
+    public boolean isAttemptingToReconnect() {
+
+        return attemptingReconnect;
+    } // end of isAttemptingToReconnect
 } // end of MainActivity

@@ -8,4 +8,6 @@
     <color name="tallyPreview">#00FF00</color>
     <color name="foreground">#fff</color>
     <color name="background">#000</color>
+    <color name="backgroundColor">#222
+    </color>
 </resources>
