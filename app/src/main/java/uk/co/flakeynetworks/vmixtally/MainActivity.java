@@ -13,6 +13,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.crashlytics.android.Crashlytics;
+
+import io.fabric.sdk.android.Fabric;
 import uk.co.flakeynetworks.vmix.VMixHost;
 import uk.co.flakeynetworks.vmix.api.TCPAPI;
 import uk.co.flakeynetworks.vmix.api.TCPAPIListener;
@@ -26,6 +29,54 @@ public class MainActivity extends AppCompatActivity {
     private static Input input;
     private static boolean attemptingReconnect = false;
 
+    // Reconnecting to host stuff
+    private Thread reconnectingThread;
+    private class ReconnectThread extends Thread {
+
+        @Override
+        public void run() {
+
+            while (true) {
+
+                if(isInterrupted()) return;
+
+                try {
+                    Thread.sleep(getResources().getInteger(R.integer.reconnectWaitPeriod));
+                } catch (InterruptedException e) {
+                    return;
+                } // end of catch
+
+                if(host == null || tcpConnection != null) return;
+
+                // Make sure we can connect to the tcp api
+                TCPAPI tcpConnection = new TCPAPI(host);
+
+                // Connect tp the tcp api
+                if(tcpConnection.connect()) {
+
+                    // Subscribe for tally updates
+                    tcpConnection.getProtocol().subscribeTally();
+
+                    if(isInterrupted()) {
+                        tcpConnection.close();
+                        return;
+                    } // end of if
+
+                    MainActivity.tcpConnection = tcpConnection;
+
+                    runOnUiThread(MainActivity.this::reconnected);
+                    return;
+                } // end of if
+
+                if(isInterrupted()) return;
+            } // end of while
+        } // end of run
+    } // end of ReconnectingThread
+
+
+    private ReconnectingDialog reconnectingDialog;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -38,6 +89,14 @@ public class MainActivity extends AppCompatActivity {
             // Load the settings fragment
             loadSettingsFragment();
         } // end of if
+
+
+        // Initialise Fabrio.io with Crashlytics
+        final Fabric fabric = new Fabric.Builder(this)
+                .kits(new Crashlytics())
+                .debuggable(true)
+                .build();
+        Fabric.with(fabric);
     } // end of onCreate
 
 
@@ -53,8 +112,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void loadSettingsFragment() {
 
-        // Set the title bar title
-        getSupportActionBar().setTitle(getString(R.string.settingstitle));  // provide compatibility to all the versions
+        input = null;
 
         SettingsFragment fragment = new SettingsFragment();
         loadFragment(fragment);
@@ -72,7 +130,9 @@ public class MainActivity extends AppCompatActivity {
     public void setHost(VMixHost host) {
 
         this.host = host;
-        saveHost();
+
+        if(host != null)
+            saveHost();
     } // end of setHost
 
 
@@ -81,13 +141,15 @@ public class MainActivity extends AppCompatActivity {
 
         this.tcpConnection = tcpConnection;
 
-        tcpConnection.addListener(new TCPAPIListener() {
-            @Override
-            public void disconnected() {
+        if(tcpConnection != null) {
+            tcpConnection.addListener(new TCPAPIListener() {
+                @Override
+                public void disconnected() {
 
-                runOnUiThread(() -> tcpConnectionClosed());
-            } // end of disconnected
-        });
+                    runOnUiThread(() -> tcpConnectionClosed());
+                } // end of disconnected
+            });
+        } // end of if
     } // end of setTcpConnection
 
 
@@ -121,7 +183,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void inputWasRemoved() {
 
-        // TODO show an alert box here to say the input was removed.
+        input = null;
+
         loadSettingsFragment();
 
         AlertDialog.Builder builder;
@@ -134,8 +197,6 @@ public class MainActivity extends AppCompatActivity {
         builder.setTitle("Input removed")
                 .setMessage(input.getName() + " was removed.")
                 .setPositiveButton(R.string.ok, (dialog, which) -> {
-
-                    // TODO cancel the reconnect here
                 })
 
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -145,12 +206,19 @@ public class MainActivity extends AppCompatActivity {
 
     public void showReconnectingDialog() {
 
-        // end of cancel
         DialogInterface.OnCancelListener listener = dialog -> {
         };
 
-        ReconnectingDialog dialog = new ReconnectingDialog(this, false, listener);
-        dialog.show();
+        reconnectingDialog = new ReconnectingDialog(this, false, listener);
+        reconnectingDialog.setCancelAction(new ReconnectingDialog.CancelAction() {
+            @Override
+            public void execute() {
+
+                cancelReconnect();
+            } // end of execute
+        });
+
+        reconnectingDialog.show();
     } // end of showReconnectingDialog
 
 
@@ -160,7 +228,57 @@ public class MainActivity extends AppCompatActivity {
 
         attemptingReconnect = true;
         loadSettingsFragment();
+
+        // Start attempting to connect to the server.
+        if(reconnectingThread != null)
+            reconnectingThread.interrupt();
+
+        reconnectingThread = new ReconnectThread();
+        reconnectingThread.start();
     } // end of tcpConnectionClosed
+
+
+    public void reconnected() {
+
+        attemptingReconnect = false;
+        reconnectingThread = null;
+
+        if(reconnectingDialog != null) {
+            reconnectingDialog.dismiss();
+            reconnectingDialog = null;
+        } // end of if
+
+
+        // Update the host
+        Thread thread = new Thread() {
+            public void run() {
+                host.update();
+
+                if(input != null)
+                    runOnUiThread(MainActivity.this::loadTallyFragment);
+                else
+                    runOnUiThread(MainActivity.this::loadSettingsFragment);
+            } // end of run
+        };
+
+        thread.start();
+    } // end of reconnected
+
+
+    public void cancelReconnect() {
+
+        if(reconnectingThread != null) {
+            reconnectingThread.interrupt();
+            reconnectingThread = null;
+        } // end of if
+
+        if(reconnectingDialog != null) {
+            reconnectingDialog.dismiss();
+            reconnectingDialog = null;
+        } // end of if
+
+        attemptingReconnect = false;
+    } // end of cancelReconnect
 
 
     @Override

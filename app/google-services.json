@@ -1,0 +1,45 @@
+{
+  "project_info": {
+    "project_number": "986885953450",
+    "firebase_url": "https://vmix-tally.firebaseio.com",
+    "project_id": "vmix-tally",
+    "storage_bucket": "vmix-tally.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:986885953450:android:f9d081cb30e8ee1b",
+        "android_client_info": {
+          "package_name": "uk.co.flakeynetworks.vmixtally"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "986885953450-i3qhq3dlkjpkigksij7q1crfi1d9sk8k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbkAbqho0Ko524gT8nQhtAOW6lJaZWzK8"
+        },
+        {
+          "current_key": "AIzaSyCbkAbqho0Ko524gT8nQhtAOW6lJaZWzK8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

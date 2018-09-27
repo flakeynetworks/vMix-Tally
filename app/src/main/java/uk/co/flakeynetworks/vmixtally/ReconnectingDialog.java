@@ -16,6 +16,14 @@ import android.widget.Button;
 public class ReconnectingDialog extends Dialog {
 
 
+    public static class CancelAction {
+
+        public void execute() { } // end of execute
+    } // end of CancelAction
+
+    private CancelAction cancelAction;
+
+
     public ReconnectingDialog(@NonNull Context context, boolean cancelable, @Nullable OnCancelListener cancelListener) {
 
         super(context, cancelable, cancelListener);
@@ -35,9 +43,16 @@ public class ReconnectingDialog extends Dialog {
             @Override
             public void onClick(View v) {
 
-                dismiss();
+                if(cancelAction != null)
+                    cancelAction.execute();
             } // end of onClick
         });
         setCanceledOnTouchOutside(false);
     } // end of onCreate
+
+
+    public void setCancelAction(CancelAction cancelAction) {
+
+        this.cancelAction = cancelAction;
+    } // end of setCancelAction
 }  // end of ReconnectingDialog
