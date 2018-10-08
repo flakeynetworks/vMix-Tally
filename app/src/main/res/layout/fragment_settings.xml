@@ -39,22 +39,65 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/textView2"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingTop="20dp"
-                    android:text="vMix Address"
-                    android:textColor="@android:color/white" />
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingTop="20dp">
 
-                <EditText
-                    android:id="@+id/addressField"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:ems="10"
-                    android:hint="vMix Address"
-                    android:inputType="textPersonName"
-                    android:textColor="@android:color/white" />
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:paddingEnd="20dp">
+
+                        <TextView
+                            android:id="@+id/textView2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="vMix Address"
+                            android:textColor="@android:color/white" />
+
+                        <EditText
+                            android:id="@+id/addressField"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ems="10"
+                            android:hint="vMix Address"
+                            android:inputType="textPersonName"
+                            android:textColor="@android:color/white"
+                            android:backgroundTint="@color/foreground"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="3"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/textView3"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Port"
+                            android:textColor="@color/foreground"
+                            tools:text="Port" />
+
+                        <EditText
+                            android:id="@+id/portNumber"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="@color/foreground"
+                            android:ems="10"
+                            android:inputType="numberSigned"
+                            android:text="@string/default_port"
+                            android:textColor="@color/foreground"
+                            tools:text="@string/default_port" />
+                    </LinearLayout>
+
+                </LinearLayout>
 
                 <Button
                     android:id="@+id/connectButton"

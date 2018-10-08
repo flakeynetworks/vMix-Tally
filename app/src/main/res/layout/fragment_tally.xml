@@ -10,8 +10,19 @@
         android:id="@+id/tallyColor"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
+        android:background="@color/tallyNone"
         android:src="@android:color/transparent"
         app:srcCompat="@android:color/transparent"
         tools:layout_editor_absoluteX="0dp"
         tools:layout_editor_absoluteY="16dp" />
+
+    <TextView
+        android:id="@+id/tallyText"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="fill_vertical"
+        android:text="@string/tally_none"
+        android:textAlignment="center"
+        android:textColor="@color/foreground"
+        android:textSize="50sp" />
 </android.support.constraint.ConstraintLayout>

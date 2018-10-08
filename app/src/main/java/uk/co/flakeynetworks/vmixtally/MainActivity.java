@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -50,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Make sure we can connect to the tcp api
                 TCPAPI tcpConnection = new TCPAPI(host);
+                tcpConnection.setTimeout(getResources().getInteger(R.integer.timeout_value));
 
                 // Connect tp the tcp api
                 if(tcpConnection.connect()) {
@@ -183,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void inputWasRemoved() {
 
+        Input oldInput = input;
         input = null;
 
         loadSettingsFragment();
@@ -195,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
 
         // end of onClick
         builder.setTitle("Input removed")
-                .setMessage(input.getName() + " was removed.")
+                .setMessage(oldInput.getName() + " was removed.")
                 .setPositiveButton(R.string.ok, (dialog, which) -> {
                 })
 
@@ -204,12 +207,19 @@ public class MainActivity extends AppCompatActivity {
     } // end of inputWasRemoved
 
 
-    public void showReconnectingDialog() {
+    public void showReconnectingDialog(Context context) {
+
+        // Means there is already one showing
+        if(reconnectingDialog != null) return;
 
         DialogInterface.OnCancelListener listener = dialog -> {
+
+            Log.v("Reconnecting Dialog", "Cancelled");
+            reconnectingDialog.dismiss();
+            reconnectingDialog = null;
         };
 
-        reconnectingDialog = new ReconnectingDialog(this, false, listener);
+        reconnectingDialog = new ReconnectingDialog(context, false, listener);
         reconnectingDialog.setCancelAction(new ReconnectingDialog.CancelAction() {
             @Override
             public void execute() {
@@ -243,10 +253,8 @@ public class MainActivity extends AppCompatActivity {
         attemptingReconnect = false;
         reconnectingThread = null;
 
-        if(reconnectingDialog != null) {
-            reconnectingDialog.dismiss();
-            reconnectingDialog = null;
-        } // end of if
+        if(reconnectingDialog != null)
+            reconnectingDialog.cancel();
 
 
         // Update the host
@@ -272,10 +280,8 @@ public class MainActivity extends AppCompatActivity {
             reconnectingThread = null;
         } // end of if
 
-        if(reconnectingDialog != null) {
-            reconnectingDialog.dismiss();
-            reconnectingDialog = null;
-        } // end of if
+        if(reconnectingDialog != null)
+            reconnectingDialog.cancel();
 
         attemptingReconnect = false;
     } // end of cancelReconnect

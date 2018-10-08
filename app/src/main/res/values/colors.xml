@@ -3,9 +3,9 @@
     <color name="colorPrimary">#000000</color>
     <color name="colorPrimaryDark">#000000</color>
     <color name="colorAccent">#FFFFFF</color>
-    <color name="tallyProgram">#FF0000</color>
+    <color name="tallyProgram">#AB1C00</color>
     <color name="tallyNone">#000000</color>
-    <color name="tallyPreview">#00FF00</color>
+    <color name="tallyPreview">#006400</color>
     <color name="foreground">#fff</color>
     <color name="background">#000</color>
     <color name="backgroundColor">#222

@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -36,6 +37,7 @@ public class SettingsFragment extends Fragment {
 
 
     private EditText addressField;
+    private EditText portField;
     private MainActivity mainActivity;
 
 
@@ -66,10 +68,11 @@ public class SettingsFragment extends Fragment {
         // Set the title bar title
         mainActivity.getSupportActionBar().setTitle(getString(R.string.settingstitle));  // provide compatibility to all the versions
 
-        // Set the address field
+        // Set the address field & port field
         addressField = view.findViewById(R.id.addressField);
         addressField.setText(mainActivity.getLastSavedHost());
         addressField.setSelection(addressField.getText().toString().length());
+        portField = view.findViewById(R.id.portNumber);
 
         Button connectButton = view.findViewById(R.id.connectButton);
 
@@ -79,20 +82,19 @@ public class SettingsFragment extends Fragment {
             hideKeyboard();
             showConnecting();
 
+            // Validate the port number
+            try {
+                int port = Integer.parseInt(portField.getText().toString());
+
+                if(port < 1 || port > 65535)
+                    throw new NumberFormatException();
+            } catch (NumberFormatException e) {
+                portField.setError("Invalid port number");
+            } // end of catch
+
             // Attempt to connect to the vmix instance
             new Thread(this::connectToHost).start();
         });
-
-
-        // Hides the keyboard
-        hideKeyboard();
-
-        Button showTallyBtn = view.findViewById(R.id.showTallyBtn);
-        showTallyBtn.setOnClickListener(v -> {
-
-            mainActivity.loadTallyFragment();
-        });
-
 
         return view;
     } // end of onCreateView
@@ -128,6 +130,8 @@ public class SettingsFragment extends Fragment {
 
         super.onResume();
 
+        hideKeyboard();
+
         // Add the listener back
         VMixHost host = mainActivity.getHost();
 
@@ -136,6 +140,9 @@ public class SettingsFragment extends Fragment {
 
         // Update the list of inputs if any
         updateListOfInputs();
+
+        if(mainActivity.isAttemptingToReconnect())
+            mainActivity.showReconnectingDialog(getContext());
     } // end of onResume
 
 
@@ -149,9 +156,6 @@ public class SettingsFragment extends Fragment {
             showSuccess();
 
         hideKeyboard();
-
-        if(mainActivity.isAttemptingToReconnect())
-            mainActivity.showReconnectingDialog();
     } // end of onViewCreated
 
 
@@ -160,8 +164,7 @@ public class SettingsFragment extends Fragment {
         // Make sure we can connect to the web api
         try {
 
-            // If we were connected to another host before then disconnect.
-
+            // Check If we were connected to another host before then disconnect.
             // Close down the previous TCP connection is any
             TCPAPI previousTCPConnection = mainActivity.getTcpConnection();
 
@@ -175,15 +178,16 @@ public class SettingsFragment extends Fragment {
             mainActivity.setHost(null);
 
             // Try connecting to the new host
-            VMixHost host = new VMixHost(addressField.getText().toString(), 8088);
+            VMixHost host = new VMixHost(addressField.getText().toString(), Integer.parseInt(portField.getText().toString()));
 
             // Make sure we can connect to the tcp api
             TCPAPI tcpConnection = new TCPAPI(host);
+            tcpConnection.setTimeout(getResources().getInteger(R.integer.timeout_value));
 
             // Connect tp the tcp api
             if(!tcpConnection.connect()) {
 
-                mainActivity.runOnUiThread(() -> showError("Could not connect. Check port 8099"));
+                mainActivity.runOnUiThread(() -> showError("Could not connect. Check address is correct and port 8099 is open"));
                 tcpConnection.close();
                 return;
             } // end of if
@@ -192,7 +196,7 @@ public class SettingsFragment extends Fragment {
             // Get an update via the web api
             if(!host.update()) {
 
-                mainActivity.runOnUiThread(() -> showError("Could not connect. Check the web controller port"));
+                mainActivity.runOnUiThread(() -> showError("Could not connect. Check that port " + portField.getText().toString() + " is open."));
                 tcpConnection.close();
                 return;
             } // end of if
@@ -232,6 +236,12 @@ public class SettingsFragment extends Fragment {
 
         Button connectButton = getView().findViewById(R.id.connectButton);
         connectButton.setEnabled(true);
+
+        LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
+        inputLayout.setVisibility(View.GONE);
+
+        LinearLayout nextBox = getView().findViewById(R.id.nextBox);
+        nextBox.setVisibility(View.GONE);
     } // end of showError
 
 
@@ -254,6 +264,12 @@ public class SettingsFragment extends Fragment {
 
         Button connectButton = getView().findViewById(R.id.connectButton);
         connectButton.setEnabled(false);
+
+        LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
+        inputLayout.setVisibility(View.GONE);
+
+        LinearLayout nextBox = getView().findViewById(R.id.nextBox);
+        nextBox.setVisibility(View.GONE);
     } // end of showConnecting
 
 
@@ -284,23 +300,25 @@ public class SettingsFragment extends Fragment {
 
         updateListOfInputs();
 
-        // Show the next box
-        LinearLayout nextBox = getView().findViewById(R.id.nextBox);
-        nextBox.setVisibility(View.VISIBLE);
 
+        // Setup the show tally button
         Button showTallyBtn = getView().findViewById(R.id.showTallyBtn);
-
         showTallyBtn.setOnClickListener(v -> {
 
             // Get the currently selected input
             Spinner inputSpinner = getView().findViewById(R.id.inputSpinner);
 
-            int position = inputSpinner.getSelectedItemPosition();
-            mainActivity.setInput(mainActivity.getHost().getStatus().getInput(position));
+            Input input = (Input) inputSpinner.getSelectedItem();
+            mainActivity.setInput(input);
 
             // Load the activity
             mainActivity.loadTallyFragment();
         });
+
+
+        // Show the next box
+        LinearLayout nextBox = getView().findViewById(R.id.nextBox);
+        nextBox.setVisibility(View.VISIBLE);
     } // end of showSuccess
 
 
@@ -315,12 +333,17 @@ public class SettingsFragment extends Fragment {
         VMixStatus vmixStatus = host.getStatus();
         if(vmixStatus == null) return;
 
-        // TODO change this so that we have a custom item layout so that we can have an array of inputs
-        List<String> inputs = new ArrayList<>();
-        for(int i = 0; i < vmixStatus.getNumberOfInputs(); i++)
-            inputs.add(vmixStatus.getInput(i).getName());
 
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(mainActivity, R.layout.spinner_item, inputs);
+        List<Input> inputs = new ArrayList<>();
+        for(int i = 0; i < vmixStatus.getNumberOfInputs(); i++) {
+
+            Input input = vmixStatus.getInput(i);
+            if(input == null) continue;
+
+            inputs.add(vmixStatus.getInput(i));
+        } // end of for
+
+        ArrayAdapter<Input> dataAdapter = new ArrayAdapter<>(mainActivity, R.layout.spinner_item, inputs);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         inputSpinner.setAdapter(dataAdapter);
     } // end of updateListOfInputs
@@ -328,15 +351,7 @@ public class SettingsFragment extends Fragment {
 
     public void hideKeyboard() {
 
-        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Activity.INPUT_METHOD_SERVICE);
-
-        //Find the currently focused view, so we can grab the correct window token from it.
-        View view = getActivity().getCurrentFocus();
-        //If no view currently has focus, create a new one, just so we can grab a window token from it
-        if (view == null)
-            view = new View(getActivity());
-
-        imm.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
+        mainActivity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         //imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     } // end of hideKeyboard
 } // end of SettingsFragment

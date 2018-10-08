@@ -1,7 +1,11 @@
 <resources>
-    <string name="app_name">VMixTally</string>
+    <string name="app_name">vMix Tally</string>
     <string name="saved_host">lastVmixHost</string>
     <string name="settingstitle">vMix Tally</string>
     <string name="ok">OK</string>
     <string name="connectingToServer">Connecting ...</string>
+    <string name="tally_program">ON PROGRAM</string>
+    <string name="tally_preview">ON PREVIEW</string>
+    <string name="tally_none">STANDBY</string>
+    <string name="default_port">8088</string>
 </resources>

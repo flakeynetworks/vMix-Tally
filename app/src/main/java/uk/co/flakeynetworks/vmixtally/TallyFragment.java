@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import uk.co.flakeynetworks.vmix.VMixHost;
 import uk.co.flakeynetworks.vmix.api.TCPAPI;
@@ -78,6 +79,14 @@ public class TallyFragment extends Fragment {
 
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        updateTally();
+    } // end of onViewCreated
+
+
+    @Override
     public void onDestroy() {
 
         // Remove the listener for this input
@@ -99,11 +108,18 @@ public class TallyFragment extends Fragment {
 
     private void updateTally() {
 
-        if(input.isProgram())
+        Log.v("tally", "updated");
+        TextView tallyText = getView().findViewById(R.id.tallyText);
+
+        if(input.isProgram()) {
             tallyColor.setBackgroundColor(getResources().getColor(R.color.tallyProgram));
-        else if(input.isPreview())
+            tallyText.setText(getString(R.string.tally_program));
+        } else if(input.isPreview()) {
             tallyColor.setBackgroundColor(getResources().getColor(R.color.tallyPreview));
-        else
+            tallyText.setText(getString(R.string.tally_preview));
+        } else {
             tallyColor.setBackgroundColor(getResources().getColor(R.color.tallyNone));
+            tallyText.setText(getString(R.string.tally_none));
+        } // end of else
     } // end of updateTally
 } // end of TallyFragment
