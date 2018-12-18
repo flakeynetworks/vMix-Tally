@@ -19,10 +19,13 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.fabric.sdk.android.services.common.Crash;
 import uk.co.flakeynetworks.vmix.VMixHost;
 import uk.co.flakeynetworks.vmix.api.TCPAPI;
 import uk.co.flakeynetworks.vmix.status.HostStatusChangeListener;
@@ -178,7 +181,15 @@ public class SettingsFragment extends Fragment {
             mainActivity.setHost(null);
 
             // Try connecting to the new host
-            VMixHost host = new VMixHost(addressField.getText().toString(), Integer.parseInt(portField.getText().toString()));
+            VMixHost host;
+            try {
+                host = new VMixHost(addressField.getText().toString(), Integer.parseInt(portField.getText().toString()));
+            } catch (NumberFormatException e) {
+
+                showError("Error! Invalid Port Number");
+                return;
+            } // end of catch
+
 
             // Make sure we can connect to the tcp api
             TCPAPI tcpConnection = new TCPAPI(host);
@@ -219,29 +230,40 @@ public class SettingsFragment extends Fragment {
 
     private void showError(String message) {
 
-        LinearLayout statusBox = getView().findViewById(R.id.statusBox);
-        statusBox.setVisibility(View.VISIBLE);
+        try {
+            LinearLayout statusBox = getView().findViewById(R.id.statusBox);
+            statusBox.setVisibility(View.VISIBLE);
 
-        ImageView tick = getView().findViewById(R.id.tickImage);
-        tick.setVisibility(View.GONE);
+            ImageView tick = getView().findViewById(R.id.tickImage);
+            tick.setVisibility(View.GONE);
 
-        ImageView cross = getView().findViewById(R.id.crossImage);
-        cross.setVisibility(View.VISIBLE);
+            ImageView cross = getView().findViewById(R.id.crossImage);
+            cross.setVisibility(View.VISIBLE);
 
-        ProgressBar progressbar = getView().findViewById(R.id.progressBar);
-        progressbar.setVisibility(View.GONE);
+            ProgressBar progressbar = getView().findViewById(R.id.progressBar);
+            progressbar.setVisibility(View.GONE);
 
-        TextView status = getView().findViewById(R.id.statusText);
-        status.setText(message);
+            TextView status = getView().findViewById(R.id.statusText);
+            status.setText(message);
 
-        Button connectButton = getView().findViewById(R.id.connectButton);
-        connectButton.setEnabled(true);
+            Button connectButton = getView().findViewById(R.id.connectButton);
+            connectButton.setEnabled(true);
 
-        LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
-        inputLayout.setVisibility(View.GONE);
+            LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
+            inputLayout.setVisibility(View.GONE);
 
-        LinearLayout nextBox = getView().findViewById(R.id.nextBox);
-        nextBox.setVisibility(View.GONE);
+            LinearLayout nextBox = getView().findViewById(R.id.nextBox);
+            nextBox.setVisibility(View.GONE);
+        } catch(NullPointerException e) {
+
+            Crashlytics.setString("Dialog Error Message", message);
+            if(getView() != null)
+                Crashlytics.setString("View Object", getView().toString());
+            else
+                Crashlytics.setString("View Object", "null");
+
+            Crashlytics.logException(e);
+        } // end of catch
     } // end of showError
 
 

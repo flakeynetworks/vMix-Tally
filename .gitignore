@@ -30,3 +30,7 @@ proguard/
 
 # Android Studio captures folder
 captures/
+
+app/release/release/
+
+app/release/
