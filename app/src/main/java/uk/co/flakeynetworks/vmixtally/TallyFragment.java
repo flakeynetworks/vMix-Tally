@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
+
 import uk.co.flakeynetworks.vmix.VMixHost;
 import uk.co.flakeynetworks.vmix.api.TCPAPI;
 import uk.co.flakeynetworks.vmix.status.Input;
@@ -59,17 +61,23 @@ public class TallyFragment extends Fragment {
 
         mainActivity = (MainActivity) getActivity();
 
+        // Get the first input
+        input = mainActivity.getInput();
+        if(input == null) {
+
+            Crashlytics.log("Unexpected State, loading tally fragment but a null input.");
+            mainActivity.loadSettingsFragment();
+            return view;
+        } // end of if
+
+
         tallyColor = view.findViewById(R.id.tallyColor);
         tallyColor.setBackgroundColor(getResources().getColor(R.color.tallyNone));
 
         new Thread(() -> startListeningForTallyChange()).start();
 
-
         // Get the connection to the instance we need.
         tcpConnection = mainActivity.getTcpConnection();
-
-        // Get the first input
-        input = mainActivity.getInput();
 
         // Set the title bar title
         mainActivity.getSupportActionBar().setTitle("Tally: " + input.getName());  // provide compatibility to all the versions
@@ -98,6 +106,14 @@ public class TallyFragment extends Fragment {
 
     private void startListeningForTallyChange() {
 
+        if(input == null) {
+
+            Crashlytics.log("Unexpected State, loading tally fragment but a null input.");
+            mainActivity.runOnUiThread(() -> mainActivity.loadSettingsFragment());
+            return;
+        } // end of if
+
+
         // Add a listener for this input
         input.addStatusChangeListener(statusListener);
 
@@ -108,7 +124,6 @@ public class TallyFragment extends Fragment {
 
     private void updateTally() {
 
-        Log.v("tally", "updated");
         TextView tallyText = getView().findViewById(R.id.tallyText);
 
         if(input.isProgram()) {
