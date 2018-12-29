@@ -26,12 +26,28 @@
                     android:id="@+id/textView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="10000"
                     android:text="Settings"
                     android:textColor="@color/foreground"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     tools:text="Settings" />
+
+                <TextView
+                    android:id="@+id/helpText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical|center"
+                    android:text="Help"
+                    android:textColor="@color/colorAccent" />
+
+                <ImageView
+                    android:id="@+id/helpIcon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    app:srcCompat="@android:drawable/ic_menu_help" />
             </LinearLayout>
 
             <LinearLayout

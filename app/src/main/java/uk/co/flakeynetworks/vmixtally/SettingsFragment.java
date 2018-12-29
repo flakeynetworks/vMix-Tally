@@ -1,5 +1,7 @@
 package uk.co.flakeynetworks.vmixtally;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -96,8 +98,27 @@ public class SettingsFragment extends Fragment {
             new Thread(this::connectToHost).start();
         });
 
+
+        View.OnClickListener helpListener = new View.OnClickListener() {
+            public void onClick(View v) {
+                showYouTubeHowToVideo();
+            } // end of onClick
+        };
+
+        TextView helpText = view.findViewById(R.id.helpText);
+        helpText.setOnClickListener(helpListener);
+
+        ImageView helpButton = view.findViewById(R.id.helpIcon);
+        helpButton.setOnClickListener(helpListener);
+
         return view;
     } // end of onCreateView
+
+
+    public void showYouTubeHowToVideo() {
+
+        startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(getString(R.string.youtube_how_to_url))));
+    } // end of youtube
 
 
     @Override
