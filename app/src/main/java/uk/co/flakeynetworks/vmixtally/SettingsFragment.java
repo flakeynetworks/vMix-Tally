@@ -216,7 +216,7 @@ public class SettingsFragment extends Fragment {
             // Connect tp the tcp api
             if(!tcpConnection.connect()) {
 
-                mainActivity.runOnUiThread(() -> showError("Could not connect. Check address is correct and port 8099 is open"));
+                showError("Could not connect. Check address is correct and port 8099 is open");
                 tcpConnection.close();
                 return;
             } // end of if
@@ -225,7 +225,7 @@ public class SettingsFragment extends Fragment {
             // Get an update via the web api
             if(!host.update()) {
 
-                mainActivity.runOnUiThread(() -> showError("Could not connect. Check that port " + portField.getText().toString() + " is open."));
+                showError("Could not connect. Check that port " + portField.getText().toString() + " is open.");
                 tcpConnection.close();
                 return;
             } // end of if
@@ -241,47 +241,50 @@ public class SettingsFragment extends Fragment {
             mainActivity.runOnUiThread(this::showSuccess);
         } catch (MalformedURLException e) {
 
-            mainActivity.runOnUiThread(() -> showError("Invalid Address"));
+            showError("Invalid Address");
         } // end of catch
     } // end of connectToHost
 
 
     private void showError(String message) {
 
-        try {
-            LinearLayout statusBox = getView().findViewById(R.id.statusBox);
-            statusBox.setVisibility(View.VISIBLE);
+        mainActivity.runOnUiThread(() -> {
 
-            ImageView tick = getView().findViewById(R.id.tickImage);
-            tick.setVisibility(View.GONE);
+            try {
+                LinearLayout statusBox = getView().findViewById(R.id.statusBox);
+                statusBox.setVisibility(View.VISIBLE);
 
-            ImageView cross = getView().findViewById(R.id.crossImage);
-            cross.setVisibility(View.VISIBLE);
+                ImageView tick = getView().findViewById(R.id.tickImage);
+                tick.setVisibility(View.GONE);
 
-            ProgressBar progressbar = getView().findViewById(R.id.progressBar);
-            progressbar.setVisibility(View.GONE);
+                ImageView cross = getView().findViewById(R.id.crossImage);
+                cross.setVisibility(View.VISIBLE);
 
-            TextView status = getView().findViewById(R.id.statusText);
-            status.setText(message);
+                ProgressBar progressbar = getView().findViewById(R.id.progressBar);
+                progressbar.setVisibility(View.GONE);
 
-            Button connectButton = getView().findViewById(R.id.connectButton);
-            connectButton.setEnabled(true);
+                TextView status = getView().findViewById(R.id.statusText);
+                status.setText(message);
 
-            LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
-            inputLayout.setVisibility(View.GONE);
+                Button connectButton = getView().findViewById(R.id.connectButton);
+                connectButton.setEnabled(true);
 
-            LinearLayout nextBox = getView().findViewById(R.id.nextBox);
-            nextBox.setVisibility(View.GONE);
-        } catch(NullPointerException e) {
+                LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
+                inputLayout.setVisibility(View.GONE);
 
-            Crashlytics.setString("Dialog Error Message", message);
-            if(getView() != null)
-                Crashlytics.setString("View Object", getView().toString());
-            else
-                Crashlytics.setString("View Object", "null");
+                LinearLayout nextBox = getView().findViewById(R.id.nextBox);
+                nextBox.setVisibility(View.GONE);
+            } catch(NullPointerException e) {
 
-            Crashlytics.logException(e);
-        } // end of catch
+                Crashlytics.setString("Dialog Error Message", message);
+                if(getView() != null)
+                    Crashlytics.setString("View Object", getView().toString());
+                else
+                    Crashlytics.setString("View Object", "null");
+
+                Crashlytics.logException(e);
+            } // end of catch
+        });
     } // end of showError
 
 
