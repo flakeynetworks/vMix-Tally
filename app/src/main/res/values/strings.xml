@@ -8,4 +8,5 @@
     <string name="tally_preview">ON PREVIEW</string>
     <string name="tally_none">STANDBY</string>
     <string name="default_port">8088</string>
+    <string name="youtube_how_to_url">https://youtu.be/s7P0CekCog8</string>
 </resources>

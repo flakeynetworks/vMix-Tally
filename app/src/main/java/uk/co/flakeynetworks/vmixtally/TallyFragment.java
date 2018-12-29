@@ -27,7 +27,6 @@ public class TallyFragment extends Fragment {
 
     private ImageView tallyColor;
     private Input input;
-    private TCPAPI tcpConnection;
 
     private MainActivity mainActivity;
 
@@ -76,8 +75,6 @@ public class TallyFragment extends Fragment {
 
         new Thread(() -> startListeningForTallyChange()).start();
 
-        // Get the connection to the instance we need.
-        tcpConnection = mainActivity.getTcpConnection();
 
         // Set the title bar title
         mainActivity.getSupportActionBar().setTitle("Tally: " + input.getName());  // provide compatibility to all the versions
@@ -116,9 +113,6 @@ public class TallyFragment extends Fragment {
 
         // Add a listener for this input
         input.addStatusChangeListener(statusListener);
-
-        // Subscribe for tally changes
-        tcpConnection.getProtocol().subscribeTally();
     } // end of startListeningForTallyChange
 
 
