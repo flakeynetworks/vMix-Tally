@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ok">OK</string>
+    <string name="connectingToServer">conectando ...</string>
+    <string name="tally_program">en aire</string>
+    <string name="tally_preview">en Previo</string>
+    <string name="tally_none">En espera</string>
+</resources>
