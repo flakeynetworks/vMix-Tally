@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/backgroundColor"
-    tools:context="uk.co.flakeynetworks.vmixtally.MainActivity">
+    tools:context="uk.co.flakeynetworks.vmixtally.TallyActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -134,9 +134,11 @@
                     android:id="@+id/statusText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:capitalize="characters"
                     android:paddingBottom="10dp"
                     android:text="@string/connectingToServer"
                     android:textAlignment="center"
+                    android:textAllCaps="true"
                     android:textColor="@android:color/white" />
 
                 <ProgressBar
@@ -200,32 +202,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Show Tally" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="false"
-                android:orientation="horizontal"
-                android:paddingTop="20dp"
-                android:visibility="gone">
-
-                <ImageView
-                    android:id="@+id/imageView"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_weight="1"
-                    android:src="@drawable/flakeynetworks_icon" />
-
-                <TextView
-                    android:id="@+id/textView5"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:gravity="center_vertical"
-                    android:text="Created by Flakeynetworks.co.uk"
-                    android:textAlignment="center"
-                    android:textColor="@android:color/white" />
             </LinearLayout>
 
         </LinearLayout>
