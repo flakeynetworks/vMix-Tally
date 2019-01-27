@@ -23,7 +23,7 @@ import uk.co.flakeynetworks.vmix.api.TCPAPIListener;
 import uk.co.flakeynetworks.vmix.status.Input;
 
 
-public class MainActivity extends AppCompatActivity {
+public class TallyActivity extends AppCompatActivity {
 
     private static VMixHost host;
     private static TCPAPI tcpConnection;
@@ -64,9 +64,9 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     } // end of if
 
-                    MainActivity.tcpConnection = tcpConnection;
+                    TallyActivity.tcpConnection = tcpConnection;
 
-                    runOnUiThread(MainActivity.this::reconnected);
+                    runOnUiThread(TallyActivity.this::reconnected);
                     return;
                 } // end of if
 
@@ -263,9 +263,9 @@ public class MainActivity extends AppCompatActivity {
                 host.update();
 
                 if(input != null)
-                    runOnUiThread(MainActivity.this::loadTallyFragment);
+                    runOnUiThread(TallyActivity.this::loadTallyFragment);
                 else
-                    runOnUiThread(MainActivity.this::loadSettingsFragment);
+                    runOnUiThread(TallyActivity.this::loadSettingsFragment);
             } // end of run
         };
 
@@ -312,4 +312,4 @@ public class MainActivity extends AppCompatActivity {
 
         return attemptingReconnect;
     } // end of isAttemptingToReconnect
-} // end of MainActivity
+} // end of TallyActivity

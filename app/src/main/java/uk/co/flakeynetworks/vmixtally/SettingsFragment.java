@@ -3,6 +3,8 @@ package uk.co.flakeynetworks.vmixtally;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -40,7 +42,7 @@ public class SettingsFragment extends Fragment {
 
     private EditText addressField;
     private EditText portField;
-    private MainActivity mainActivity;
+    private TallyActivity mainActivity;
 
 
     private final HostStatusChangeListener listener = new HostStatusChangeListener() {
@@ -65,7 +67,7 @@ public class SettingsFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
-        mainActivity = (MainActivity) getActivity();
+        mainActivity = (TallyActivity) getActivity();
 
         // Set the title bar title
         mainActivity.getSupportActionBar().setTitle(getString(R.string.settingstitle));  // provide compatibility to all the versions
@@ -99,11 +101,8 @@ public class SettingsFragment extends Fragment {
         });
 
 
-        View.OnClickListener helpListener = new View.OnClickListener() {
-            public void onClick(View v) {
-                showYouTubeHowToVideo();
-            } // end of onClick
-        };
+        // Add a listener to the UI elements to display a youtube app.
+        View.OnClickListener helpListener = v -> showYouTubeHowToVideo();
 
         TextView helpText = view.findViewById(R.id.helpText);
         helpText.setOnClickListener(helpListener);
@@ -246,44 +245,47 @@ public class SettingsFragment extends Fragment {
     } // end of connectToHost
 
 
-    private void showError(String message) {
+    private void showError(@NonNull String message) {
 
-        mainActivity.runOnUiThread(() -> {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
 
-            try {
-                LinearLayout statusBox = getView().findViewById(R.id.statusBox);
-                statusBox.setVisibility(View.VISIBLE);
+                try {
+                    LinearLayout statusBox = getView().findViewById(R.id.statusBox);
+                    statusBox.setVisibility(View.VISIBLE);
 
-                ImageView tick = getView().findViewById(R.id.tickImage);
-                tick.setVisibility(View.GONE);
+                    ImageView tick = getView().findViewById(R.id.tickImage);
+                    tick.setVisibility(View.GONE);
 
-                ImageView cross = getView().findViewById(R.id.crossImage);
-                cross.setVisibility(View.VISIBLE);
+                    ImageView cross = getView().findViewById(R.id.crossImage);
+                    cross.setVisibility(View.VISIBLE);
 
-                ProgressBar progressbar = getView().findViewById(R.id.progressBar);
-                progressbar.setVisibility(View.GONE);
+                    ProgressBar progressbar = getView().findViewById(R.id.progressBar);
+                    progressbar.setVisibility(View.GONE);
 
-                TextView status = getView().findViewById(R.id.statusText);
-                status.setText(message);
+                    TextView status = getView().findViewById(R.id.statusText);
+                    status.setText(message);
 
-                Button connectButton = getView().findViewById(R.id.connectButton);
-                connectButton.setEnabled(true);
+                    Button connectButton = getView().findViewById(R.id.connectButton);
+                    connectButton.setEnabled(true);
 
-                LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
-                inputLayout.setVisibility(View.GONE);
+                    LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
+                    inputLayout.setVisibility(View.GONE);
 
-                LinearLayout nextBox = getView().findViewById(R.id.nextBox);
-                nextBox.setVisibility(View.GONE);
-            } catch(NullPointerException e) {
+                    LinearLayout nextBox = getView().findViewById(R.id.nextBox);
+                    nextBox.setVisibility(View.GONE);
+                } catch(NullPointerException e) {
 
-                Crashlytics.setString("Dialog Error Message", message);
-                if(getView() != null)
-                    Crashlytics.setString("View Object", getView().toString());
-                else
-                    Crashlytics.setString("View Object", "null");
+                    Crashlytics.setString("Dialog Error Message", message);
+                    if(getView() != null)
+                        Crashlytics.setString("View Object", getView().toString());
+                    else
+                        Crashlytics.setString("View Object", "null");
 
-                Crashlytics.logException(e);
-            } // end of catch
+                    Crashlytics.logException(e);
+                } // end of catch
+            }
         });
     } // end of showError
 
