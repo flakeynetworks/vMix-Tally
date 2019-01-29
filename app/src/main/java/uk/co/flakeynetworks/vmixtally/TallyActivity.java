@@ -6,28 +6,27 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.crashlytics.android.Crashlytics;
 
+import androidx.appcompat.app.AppCompatActivity;
 import io.fabric.sdk.android.Fabric;
 import uk.co.flakeynetworks.vmix.VMixHost;
 import uk.co.flakeynetworks.vmix.api.TCPAPI;
 import uk.co.flakeynetworks.vmix.api.TCPAPIListener;
 import uk.co.flakeynetworks.vmix.status.Input;
+import uk.co.flakeynetworks.vmixtally.ui.dialog.ReconnectingDialog;
+import uk.co.flakeynetworks.vmixtally.ui.settings.SettingsFragment;
+import uk.co.flakeynetworks.vmixtally.ui.tally.TallyFragment;
 
 
 public class TallyActivity extends AppCompatActivity {
 
     private static VMixHost host;
     private static TCPAPI tcpConnection;
-    private static Input input;
     private static boolean attemptingReconnect = false;
 
     // Reconnecting to host stuff
@@ -102,29 +101,19 @@ public class TallyActivity extends AppCompatActivity {
     } // end of onCreate
 
 
-    private void loadFragment(Fragment fragment) {
-
-        FragmentManager manager = getSupportFragmentManager();
-        FragmentTransaction transaction = manager.beginTransaction();
-        transaction.replace(R.id.fragmentPlaceHolder, fragment);
-
-        transaction.commitAllowingStateLoss();
-    } // end of loadFragment
-
-
     public void loadSettingsFragment() {
 
         input = null;
 
         SettingsFragment fragment = new SettingsFragment();
-        loadFragment(fragment);
+        //loadFragment(fragment);
     } // end of loadSettingsFragment
 
 
     public void loadTallyFragment() {
 
         TallyFragment fragment = new TallyFragment();
-        loadFragment(fragment);
+        //loadFragment(fragment);
     } // end of loadTallyFragment
 
 
@@ -155,26 +144,6 @@ public class TallyActivity extends AppCompatActivity {
     } // end of setTcpConnection
 
 
-    public void setInput(Input input) {
-
-        this.input = input;
-    } // end of setInput
-
-
-    public Input getInput() { return input; } // end of getInput
-
-
-    private void saveHost() {
-
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(getString(R.string.saved_host), host.getAddress());
-
-        editor.commit();
-    } // end of saveHost
-
-
     public String getLastSavedHost() {
 
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
@@ -196,9 +165,11 @@ public class TallyActivity extends AppCompatActivity {
         else
             builder = new AlertDialog.Builder(this);
 
-        // end of onClick
+        String oldInputName = "Input";
+        if(oldInput != null) oldInputName = oldInput.getName();
+
         builder.setTitle("Input removed")
-                .setMessage(oldInput.getName() + " was removed.")
+                .setMessage(oldInputName + " was removed.")
                 .setPositiveButton(R.string.ok, (dialog, which) -> {
                 })
 
@@ -290,7 +261,7 @@ public class TallyActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        getMenuInflater().inflate(R.menu.actionbar_menu, menu);
+        getMenuInflater().inflate(R.menu.tally_actionbar_menu, menu);
         return super.onCreateOptionsMenu(menu);
     } // end of onCreateOptionsMenu
 

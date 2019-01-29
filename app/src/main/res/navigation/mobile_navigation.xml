@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@id/settingsFragment">
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="uk.co.flakeynetworks.vmixtally.ui.settings.SettingsFragment"
+        android:label="SettingsFragment"
+        tools:layout="@layout/fragment_settings">
+        <action
+            android:id="@+id/action_settingsFragment_to_tallyFragment"
+            app:destination="@id/tallyFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/tallyFragment"
+        android:name="uk.co.flakeynetworks.vmixtally.ui.tally.TallyFragment"
+        android:label="TallyFragment"
+        tools:layout="@layout/fragment_tally"/>
+</navigation>
