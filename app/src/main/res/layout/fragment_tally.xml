@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    tools:context="uk.co.flakeynetworks.vmixtally.MainActivity">
+    tools:context="uk.co.flakeynetworks.vmixtally.TallyActivity">
 
     <ImageView
         android:id="@+id/tallyColor"
@@ -20,9 +20,11 @@
         android:id="@+id/tallyText"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:capitalize="characters"
         android:gravity="fill_vertical"
         android:text="@string/tally_none"
         android:textAlignment="center"
+        android:textAllCaps="true"
         android:textColor="@color/foreground"
         android:textSize="50sp" />
 </android.support.constraint.ConstraintLayout>

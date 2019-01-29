@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,11 +12,8 @@ import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
 
-import uk.co.flakeynetworks.vmix.VMixHost;
-import uk.co.flakeynetworks.vmix.api.TCPAPI;
 import uk.co.flakeynetworks.vmix.status.Input;
 import uk.co.flakeynetworks.vmix.status.InputStatusChangeListener;
-import uk.co.flakeynetworks.vmix.status.VMixStatus;
 
 /**
  * Created by Richard Stokes on 9/24/2018.
@@ -28,7 +24,7 @@ public class TallyFragment extends Fragment {
     private ImageView tallyColor;
     private Input input;
 
-    private MainActivity mainActivity;
+    private TallyActivity mainActivity;
 
     // Add a listener to the input
     private InputStatusChangeListener statusListener = new InputStatusChangeListener() {
@@ -58,7 +54,7 @@ public class TallyFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_tally, container, false);
 
-        mainActivity = (MainActivity) getActivity();
+        mainActivity = (TallyActivity) getActivity();
 
         // Get the first input
         input = mainActivity.getInput();
@@ -119,6 +115,9 @@ public class TallyFragment extends Fragment {
     private void updateTally() {
 
         TextView tallyText = getView().findViewById(R.id.tallyText);
+
+        // Check that there is a valid input
+        if(input == null) mainActivity.inputWasRemoved();
 
         if(input.isProgram()) {
             tallyColor.setBackgroundColor(getResources().getColor(R.color.tallyProgram));
