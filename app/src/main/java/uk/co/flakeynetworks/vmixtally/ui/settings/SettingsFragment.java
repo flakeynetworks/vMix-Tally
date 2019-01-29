@@ -1,13 +1,13 @@
-package uk.co.flakeynetworks.vmixtally;
+package uk.co.flakeynetworks.vmixtally.ui.settings;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +32,8 @@ import uk.co.flakeynetworks.vmix.api.TCPAPI;
 import uk.co.flakeynetworks.vmix.status.HostStatusChangeListener;
 import uk.co.flakeynetworks.vmix.status.Input;
 import uk.co.flakeynetworks.vmix.status.VMixStatus;
+import uk.co.flakeynetworks.vmixtally.R;
+import uk.co.flakeynetworks.vmixtally.TallyActivity;
 
 /**
  * Created by Richard Stokes on 9/24/2018.
@@ -388,7 +390,7 @@ public class SettingsFragment extends Fragment {
             inputs.add(vmixStatus.getInput(i));
         } // end of for
 
-        ArrayAdapter<Input> dataAdapter = new ArrayAdapter<>(mainActivity, R.layout.spinner_item, inputs);
+        ArrayAdapter<Input> dataAdapter = new ArrayAdapter<>(mainActivity, R.layout.input_spinner_item, inputs);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         inputSpinner.setAdapter(dataAdapter);
     } // end of updateListOfInputs
