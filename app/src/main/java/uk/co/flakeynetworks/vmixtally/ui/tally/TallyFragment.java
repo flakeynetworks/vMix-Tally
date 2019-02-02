@@ -1,52 +1,47 @@
 package uk.co.flakeynetworks.vmixtally.ui.tally;
 
+import android.app.AlertDialog;
+import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.crashlytics.android.Crashlytics;
-
-import uk.co.flakeynetworks.vmix.status.Input;
-import uk.co.flakeynetworks.vmix.status.InputStatusChangeListener;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.Navigation;
 import uk.co.flakeynetworks.vmixtally.R;
-import uk.co.flakeynetworks.vmixtally.TallyActivity;
+import uk.co.flakeynetworks.vmixtally.ViewModelFactory;
+import uk.co.flakeynetworks.vmixtally.model.TallyInput;
 
 /**
  * Created by Richard Stokes on 9/24/2018.
  */
-
 public class TallyFragment extends Fragment {
 
+
     private ImageView tallyColor;
-    private Input input;
+    private TallyViewModel viewModel;
+    private TallyInput currentInput;
 
-    private TallyActivity mainActivity;
 
-    // Add a listener to the input
-    private InputStatusChangeListener statusListener = new InputStatusChangeListener() {
+    private TallyNavigation navigation = new TallyNavigation() {
         @Override
-        public void isProgramChange() {
+        public void navigateToPreviewScreen() {
 
-            getActivity().runOnUiThread(() -> updateTally());
-        } // end of isProgramChange
+            // Pop back one
+            Navigation.findNavController(getView()).navigate(R.id.action_tally_pop);
 
-        @Override
-        public void isPreviewChange() {
-
-            getActivity().runOnUiThread(() -> updateTally());
-        } // end of isPreviewChange
-
-        @Override
-        public void inputRemoved() {
-
-            getActivity().runOnUiThread(() -> mainActivity.inputWasRemoved());
-        } // end of inputRemoved
+            // TODO need to find some way for the calling fragment to know the reason for the pop
+            // OR SHOULD WE HAVE THE DIALOG SHOW HERE!
+        } // end of navigateToSettingsMenu
     };
 
 
@@ -56,80 +51,96 @@ public class TallyFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_tally, container, false);
 
-        mainActivity = (TallyActivity) getActivity();
+        // Get the view model
+        ViewModelFactory factory = ViewModelFactory.getInstance(getActivity().getApplication());
+        viewModel = ViewModelProviders.of(this, factory).get(TallyViewModel.class);
 
-        // Get the first input
-        input = mainActivity.getInput();
-        if(input == null) {
+        viewModel.getInput().observe(this, input -> {
 
-            Crashlytics.log("Unexpected State, loading tally fragment but a null input.");
-            mainActivity.loadSettingsFragment();
-            return view;
-        } // end of if
+            // Remove the listener from the old input
+            TallyInput oldInput = currentInput;
+            if(oldInput != null)
+                oldInput.getTallyStatus().removeObservers(this);
+
+
+            // Add the listener to the new input
+            currentInput = input;
+            if(input != null) {
+
+                input.getTallyStatus().observe(this, this::updateTally);
+
+                // Set the title bar title
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Tally: " + currentInput.getInput().getName());  // provide compatibility to all the versions
+            } else {
+
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Tally");  // provide compatibility to all the versions
+                showInputRemovedDialog(oldInput);
+                navigation.navigateToPreviewScreen();
+            } // end of else
+        });
 
 
         tallyColor = view.findViewById(R.id.tallyColor);
         tallyColor.setBackgroundColor(getResources().getColor(R.color.tallyNone));
 
-        new Thread(() -> startListeningForTallyChange()).start();
-
-
-        // Set the title bar title
-        mainActivity.getSupportActionBar().setTitle("Tally: " + input.getName());  // provide compatibility to all the versions
+        setHasOptionsMenu(true);
 
         return view;
     } // end of onCreateView
 
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 
-        updateTally();
-    } // end of onViewCreated
-
-
-    @Override
-    public void onDestroy() {
-
-        // Remove the listener for this input
-        input.removeStatusChangeListener(statusListener);
-
-        super.onDestroy();
-    } // end of onDestroy
+        inflater.inflate(R.menu.tally_actionbar_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    } // end of onCreateOptionsMenu
 
 
-    private void startListeningForTallyChange() {
+    private void showInputRemovedDialog(TallyInput oldInput) {
 
-        if(input == null) {
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            builder = new AlertDialog.Builder(getContext(), android.R.style.Theme_Material_Dialog_Alert);
+        else
+            builder = new AlertDialog.Builder(getContext());
 
-            Crashlytics.log("Unexpected State, loading tally fragment but a null input.");
-            mainActivity.runOnUiThread(() -> mainActivity.loadSettingsFragment());
-            return;
-        } // end of if
+        String oldInputName = "Input";
+        if(oldInput != null) oldInputName = oldInput.getInput().getName();
+
+        builder.setTitle("Input removed")
+                .setMessage(oldInputName + " was removed.")
+                .setPositiveButton(R.string.ok, (dialog, which) -> {
+                })
+
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    } // end of showInputRemovedDialog
 
 
-        // Add a listener for this input
-        input.addStatusChangeListener(statusListener);
-    } // end of startListeningForTallyChange
-
-
-    private void updateTally() {
+    private void updateTally(int status) {
 
         TextView tallyText = getView().findViewById(R.id.tallyText);
 
-        // Check that there is a valid input
-        if(input == null) mainActivity.inputWasRemoved();
+        switch(status) {
+            case TallyInput.STATE_ON_PROGRAM:
+                tallyColor.setBackgroundColor(getResources().getColor(R.color.tallyProgram));
+                tallyText.setText(getString(R.string.tally_program));
+                break;
 
-        if(input.isProgram()) {
-            tallyColor.setBackgroundColor(getResources().getColor(R.color.tallyProgram));
-            tallyText.setText(getString(R.string.tally_program));
-        } else if(input.isPreview()) {
-            tallyColor.setBackgroundColor(getResources().getColor(R.color.tallyPreview));
-            tallyText.setText(getString(R.string.tally_preview));
-        } else {
-            tallyColor.setBackgroundColor(getResources().getColor(R.color.tallyNone));
-            tallyText.setText(getString(R.string.tally_none));
-        } // end of else
+            case TallyInput.STATE_ON_PREVIEW:
+                tallyColor.setBackgroundColor(getResources().getColor(R.color.tallyPreview));
+                tallyText.setText(getString(R.string.tally_preview));
+                break;
+
+            case TallyInput.STATE_ON_STANDBY:
+                tallyColor.setBackgroundColor(getResources().getColor(R.color.tallyNone));
+                tallyText.setText(getString(R.string.tally_none));
+                break;
+
+            case TallyInput.STATE_INVALID:
+            default:
+                break;
+        } // end of switch
     } // end of updateTally
 } // end of TallyFragment

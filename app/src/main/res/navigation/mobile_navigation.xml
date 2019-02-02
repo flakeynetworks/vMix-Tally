@@ -7,15 +7,20 @@
     <fragment
         android:id="@+id/settingsFragment"
         android:name="uk.co.flakeynetworks.vmixtally.ui.settings.SettingsFragment"
-        android:label="SettingsFragment"
+        android:label="Settings"
         tools:layout="@layout/fragment_settings">
         <action
-            android:id="@+id/action_settingsFragment_to_tallyFragment"
+            android:id="@+id/action_settings_to_tally"
             app:destination="@id/tallyFragment" />
     </fragment>
     <fragment
         android:id="@+id/tallyFragment"
         android:name="uk.co.flakeynetworks.vmixtally.ui.tally.TallyFragment"
-        android:label="TallyFragment"
-        tools:layout="@layout/fragment_tally"/>
+        android:label="Tally"
+        tools:layout="@layout/fragment_tally" >
+        <action
+            android:id="@+id/action_tally_pop"
+            app:popUpTo="@id/tallyFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 </navigation>

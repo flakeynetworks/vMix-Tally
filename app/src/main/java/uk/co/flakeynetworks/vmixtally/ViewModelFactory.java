@@ -1,15 +1,18 @@
 package uk.co.flakeynetworks.vmixtally;
 
 import android.app.Application;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import uk.co.flakeynetworks.vmixtally.data.TallyRepository;
 import uk.co.flakeynetworks.vmixtally.data.VMixTallyRepository;
 import uk.co.flakeynetworks.vmixtally.ui.settings.SettingsViewModel;
+import uk.co.flakeynetworks.vmixtally.ui.tally.TallyViewModel;
 
 public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
+
 
     private final Application application;
     private final TallyRepository repository;
@@ -20,7 +23,7 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
     private ViewModelFactory(Application application) {
 
         this.application = application;
-        this.repository = new VMixTallyRepository();
+        this.repository = new VMixTallyRepository(application);
     } // end of constructor
 
 
@@ -37,6 +40,7 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
     } // end of getInstance
 
 
+    @SuppressWarnings("unused")
     @VisibleForTesting
     public static void destroyInstance() { INSTANCE = null; } // end of destroyInstance
 
@@ -48,6 +52,9 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory {
         if(modelClass.isAssignableFrom(SettingsViewModel.class))
             //noinspection unchecked
             return (T) new SettingsViewModel(application, repository);
+        else if(modelClass.isAssignableFrom(TallyViewModel.class))
+            //noinspection unchecked
+            return (T) new TallyViewModel(application, repository);
 
         return super.create(modelClass);
     } // end of create

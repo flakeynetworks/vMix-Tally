@@ -12,4 +12,5 @@
     <string name="settings_title">Settings</string>
     <string name="tally_colour">Tally Colour</string>
     <string name="help_menu_item">Help</string>
+    <string name="preference_file_key">vmix_tally_pref</string>
 </resources>

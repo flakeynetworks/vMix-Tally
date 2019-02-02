@@ -34,11 +34,13 @@ configurations.all {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha3'
     androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'
     implementation 'com.google.android.material:material:1.0.0-beta01'
     implementation 'androidx.appcompat:appcompat:1.0.0-beta01'
+
+    implementation "io.reactivex.rxjava2:rxjava:2.2.6"
 
     // Check for v11.4.2 or higher
     implementation 'com.google.firebase:firebase-core:16.0.6'
@@ -46,6 +48,11 @@ dependencies {
     // Add dependency
     implementation 'com.crashlytics.sdk.android:crashlytics:2.9.7'
     implementation 'android.arch.navigation:navigation-fragment:1.0.0-alpha11'
+
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0-alpha01'
+    annotationProcessor 'androidx.lifecycle:lifecycle-compiler:2.1.0-alpha01'
+    implementation 'android.arch.navigation:navigation-fragment:1.0.0-alpha09'
+    implementation "android.arch.navigation:navigation-ui:1.0.0-alpha09"
 
     // vMix Tally
     //implementation 'com.github.flakeynetworks:vMix-Tally:master-SNAPSHOT'

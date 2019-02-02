@@ -1,14 +1,14 @@
 package uk.co.flakeynetworks.vmixtally.ui.settings;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -23,17 +23,19 @@ import android.widget.TextView;
 
 import com.crashlytics.android.Crashlytics;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import uk.co.flakeynetworks.vmix.VMixHost;
-import uk.co.flakeynetworks.vmix.api.TCPAPI;
-import uk.co.flakeynetworks.vmix.status.HostStatusChangeListener;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.Navigation;
 import uk.co.flakeynetworks.vmix.status.Input;
 import uk.co.flakeynetworks.vmix.status.VMixStatus;
 import uk.co.flakeynetworks.vmixtally.R;
-import uk.co.flakeynetworks.vmixtally.TallyActivity;
+import uk.co.flakeynetworks.vmixtally.ViewModelFactory;
+import uk.co.flakeynetworks.vmixtally.ui.dialog.ReconnectingDialog;
 
 /**
  * Created by Richard Stokes on 9/24/2018.
@@ -44,22 +46,22 @@ public class SettingsFragment extends Fragment {
 
     private EditText addressField;
     private EditText portField;
-    private TallyActivity mainActivity;
 
+    private ReconnectingDialog reconnectingDialog;
 
-    private final HostStatusChangeListener listener = new HostStatusChangeListener() {
-
-        @Override
-        public void inputRemoved(Input input) {
-
-            getActivity().runOnUiThread(SettingsFragment.this::updateListOfInputs);
-        } // end of inputRemoved
+    private SettingsViewModel viewModel;
+    private SettingsNavigator navigator = new SettingsNavigator() {
 
         @Override
-        public void inputAdded(Input input) {
+        public void showTally() {
 
-            getActivity().runOnUiThread(SettingsFragment.this::updateListOfInputs);
-        } // end of inputAdded
+            Navigation.findNavController(getView()).navigate(R.id.action_settings_to_tally);
+        } // end of showTally
+
+        @Override
+        public void showYouTubeHowToVideo() {
+            startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(getString(R.string.youtube_how_to_url))));
+        } // end of showYouTubeHowToVideo
     };
 
 
@@ -69,20 +71,18 @@ public class SettingsFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
-        mainActivity = (TallyActivity) getActivity();
-
-        // Set the title bar title
-        mainActivity.getSupportActionBar().setTitle(getString(R.string.settingstitle));  // provide compatibility to all the versions
+        // Get the view model
+        ViewModelFactory vmFactory = ViewModelFactory.getInstance(getActivity().getApplication());
+        viewModel = ViewModelProviders.of(this, vmFactory).get(SettingsViewModel.class);
 
         // Set the address field & port field
         addressField = view.findViewById(R.id.addressField);
-        addressField.setText(mainActivity.getLastSavedHost());
+        addressField.setText(viewModel.getSavedHost());
         addressField.setSelection(addressField.getText().toString().length());
         portField = view.findViewById(R.id.portNumber);
 
+        // Setup the connect button
         Button connectButton = view.findViewById(R.id.connectButton);
-
-        // end of onClick
         connectButton.setOnClickListener(v -> {
 
             hideKeyboard();
@@ -99,52 +99,65 @@ public class SettingsFragment extends Fragment {
             } // end of catch
 
             // Attempt to connect to the vmix instance
-            new Thread(this::connectToHost).start();
+            viewModel.connectToHost(addressField.getText().toString(), Integer.parseInt(portField.getText().toString()));
+        });
+        
+        // Setup listening for changes in the host
+        setupHostListening();
+
+        // List for reconnecting
+        viewModel.getIsReconnecting().observe(this, truth -> {
+
+            if(truth)
+                // Show reconnecting
+                showReconnectingDialog();
+            else
+                removeReconnectingDialog();
         });
 
-
-        // Add a listener to the UI elements to display a youtube app.
-        View.OnClickListener helpListener = v -> showYouTubeHowToVideo();
-
-        TextView helpText = view.findViewById(R.id.helpText);
-        helpText.setOnClickListener(helpListener);
-
-        ImageView helpButton = view.findViewById(R.id.helpIcon);
-        helpButton.setOnClickListener(helpListener);
+        setHasOptionsMenu(true);
 
         return view;
     } // end of onCreateView
 
 
-    public void showYouTubeHowToVideo() {
-
-        startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(getString(R.string.youtube_how_to_url))));
-    } // end of youtube
-
-
     @Override
-    public void onDestroy() {
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 
-        super.onDestroy();
-
-       VMixHost host = mainActivity.getHost();
-
-       if(host != null)
-           host.removeListener(listener);
-    } // end of onDestroy
+        inflater.inflate(R.menu.settings_actionbar_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    } // end of onCreateOptionsMenu
 
 
-    @Override
-    public void onPause() {
+    private void showReconnectingDialog() {
 
-        super.onPause();
+        // Means there is already one showing
+        if(reconnectingDialog != null) return;
 
-        // Remove the listener
-        VMixHost host = mainActivity.getHost();
+        DialogInterface.OnCancelListener listener = dialog -> {
 
-        if(host != null)
-            host.removeListener(listener);
-    } // end of onPause
+            reconnectingDialog.dismiss();
+            reconnectingDialog = null;
+        };
+
+        reconnectingDialog = new ReconnectingDialog(getContext(), false, listener);
+        reconnectingDialog.setCancelAction(new ReconnectingDialog.CancelAction() {
+            @Override
+            public void execute() {
+
+                viewModel.cancelReconnect();
+            } // end of execute
+        });
+
+        reconnectingDialog.show();
+    } // end of showReconnectingDialog
+
+
+    private void removeReconnectingDialog() {
+
+        if(reconnectingDialog != null)
+            reconnectingDialog.cancel();
+    } // end of reconnected
 
 
     @Override
@@ -153,18 +166,6 @@ public class SettingsFragment extends Fragment {
         super.onResume();
 
         hideKeyboard();
-
-        // Add the listener back
-        VMixHost host = mainActivity.getHost();
-
-        if(host != null)
-            host.addListener(listener);
-
-        // Update the list of inputs if any
-        updateListOfInputs();
-
-        if(mainActivity.isAttemptingToReconnect())
-            mainActivity.showReconnectingDialog(getContext());
     } // end of onResume
 
 
@@ -173,121 +174,48 @@ public class SettingsFragment extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
-        // See if we need to load from a previous state
-        if(mainActivity.getHost() != null && mainActivity.getTcpConnection() != null)
-            showSuccess();
-
         hideKeyboard();
     } // end of onViewCreated
 
 
-    private void connectToHost() {
-
-        // Make sure we can connect to the web api
-        try {
-
-            // Check If we were connected to another host before then disconnect.
-            // Close down the previous TCP connection is any
-            TCPAPI previousTCPConnection = mainActivity.getTcpConnection();
-
-            if(previousTCPConnection != null) {
-
-                previousTCPConnection.removeAllListeners();
-                previousTCPConnection.close();
-            } // end of if
-
-            mainActivity.setTcpConnection(null);
-            mainActivity.setHost(null);
-
-            // Try connecting to the new host
-            VMixHost host;
-            try {
-                host = new VMixHost(addressField.getText().toString(), Integer.parseInt(portField.getText().toString()));
-            } catch (NumberFormatException e) {
-
-                showError("Error! Invalid Port Number");
-                return;
-            } // end of catch
-
-
-            // Make sure we can connect to the tcp api
-            TCPAPI tcpConnection = new TCPAPI(host);
-            tcpConnection.setTimeout(getResources().getInteger(R.integer.timeout_value));
-
-            // Connect tp the tcp api
-            if(!tcpConnection.connect()) {
-
-                showError("Could not connect. Check address is correct and port 8099 is open");
-                tcpConnection.close();
-                return;
-            } // end of if
-
-
-            // Get an update via the web api
-            if(!host.update()) {
-
-                showError("Could not connect. Check that port " + portField.getText().toString() + " is open.");
-                tcpConnection.close();
-                return;
-            } // end of if
-
-            mainActivity.setHost(host);
-            mainActivity.setTcpConnection(tcpConnection);
-
-            // Add a listener for changes in inputs
-            tcpConnection.getProtocol().subscribeTally();
-            host.addListener(listener);
-
-            // Show successful connect
-            mainActivity.runOnUiThread(this::showSuccess);
-        } catch (MalformedURLException e) {
-
-            showError("Invalid Address");
-        } // end of catch
-    } // end of connectToHost
-
-
     private void showError(@NonNull String message) {
 
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
+        new Handler(Looper.getMainLooper()).post(() -> {
 
-                try {
-                    LinearLayout statusBox = getView().findViewById(R.id.statusBox);
-                    statusBox.setVisibility(View.VISIBLE);
+            try {
+                LinearLayout statusBox = getView().findViewById(R.id.statusBox);
+                statusBox.setVisibility(View.VISIBLE);
 
-                    ImageView tick = getView().findViewById(R.id.tickImage);
-                    tick.setVisibility(View.GONE);
+                ImageView tick = getView().findViewById(R.id.tickImage);
+                tick.setVisibility(View.GONE);
 
-                    ImageView cross = getView().findViewById(R.id.crossImage);
-                    cross.setVisibility(View.VISIBLE);
+                ImageView cross = getView().findViewById(R.id.crossImage);
+                cross.setVisibility(View.VISIBLE);
 
-                    ProgressBar progressbar = getView().findViewById(R.id.progressBar);
-                    progressbar.setVisibility(View.GONE);
+                ProgressBar progressbar = getView().findViewById(R.id.progressBar);
+                progressbar.setVisibility(View.GONE);
 
-                    TextView status = getView().findViewById(R.id.statusText);
-                    status.setText(message);
+                TextView status = getView().findViewById(R.id.statusText);
+                status.setText(message);
 
-                    Button connectButton = getView().findViewById(R.id.connectButton);
-                    connectButton.setEnabled(true);
+                Button connectButton = getView().findViewById(R.id.connectButton);
+                connectButton.setEnabled(true);
 
-                    LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
-                    inputLayout.setVisibility(View.GONE);
+                LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
+                inputLayout.setVisibility(View.GONE);
 
-                    LinearLayout nextBox = getView().findViewById(R.id.nextBox);
-                    nextBox.setVisibility(View.GONE);
-                } catch(NullPointerException e) {
+                LinearLayout nextBox = getView().findViewById(R.id.nextBox);
+                nextBox.setVisibility(View.GONE);
+            } catch(NullPointerException e) {
 
-                    Crashlytics.setString("Dialog Error Message", message);
-                    if(getView() != null)
-                        Crashlytics.setString("View Object", getView().toString());
-                    else
-                        Crashlytics.setString("View Object", "null");
+                Crashlytics.setString("Dialog Error Message", message);
+                if(getView() != null)
+                    Crashlytics.setString("View Object", getView().toString());
+                else
+                    Crashlytics.setString("View Object", "null");
 
-                    Crashlytics.logException(e);
-                } // end of catch
-            }
+                Crashlytics.logException(e);
+            } // end of catch
         });
     } // end of showError
 
@@ -320,6 +248,12 @@ public class SettingsFragment extends Fragment {
     } // end of showConnecting
 
 
+    private void hideConnectionSuccess() {
+
+        // TODO implement at some point, not sure if this is a reachable state
+    } // end of hideConnectionSuccess
+
+
     private void showSuccess() {
 
         LinearLayout statusBox = getView().findViewById(R.id.statusBox);
@@ -345,8 +279,6 @@ public class SettingsFragment extends Fragment {
         LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
         inputLayout.setVisibility(View.VISIBLE);
 
-        updateListOfInputs();
-
 
         // Setup the show tally button
         Button showTallyBtn = getView().findViewById(R.id.showTallyBtn);
@@ -356,30 +288,63 @@ public class SettingsFragment extends Fragment {
             Spinner inputSpinner = getView().findViewById(R.id.inputSpinner);
 
             Input input = (Input) inputSpinner.getSelectedItem();
-            mainActivity.setInput(input);
+            viewModel.inputSelected(input);
 
             // Load the activity
-            mainActivity.loadTallyFragment();
+            navigator.showTally();
         });
 
 
         // Show the next box
         LinearLayout nextBox = getView().findViewById(R.id.nextBox);
         nextBox.setVisibility(View.VISIBLE);
+
+        hideKeyboard();
     } // end of showSuccess
+
+
+    private void setupHostListening() {
+
+        // Start listening to any changes of the vmix host.
+        viewModel.getHost().observe(this, host -> {
+
+            if(host == null) return;
+
+            VMixStatus vmixStatus = host.getStatus();
+            if(vmixStatus == null) return;
+
+            updateListOfInputs(vmixStatus);
+        });
+
+
+        // See if we need to load from a previous state
+        viewModel.getTcpConnection().observe(this, tcpConnection -> {
+
+            if(tcpConnection == null)
+                hideConnectionSuccess();
+            else
+                showSuccess();
+        });
+
+
+        // Start listening for changes to the list of inputs
+        viewModel.getInputsChanged().observe(this, changed -> {
+            if(changed)
+                updateListOfInputs();
+        });
+    } // end of setupHostListening
 
 
     private void updateListOfInputs() {
 
+        updateListOfInputs(viewModel.getHost().getValue().getStatus());
+    } // end of updateListOfInputs
+
+
+    private void updateListOfInputs(VMixStatus vmixStatus) {
+
         Spinner inputSpinner = getView().findViewById(R.id.inputSpinner);
         if(inputSpinner == null) return;
-
-        VMixHost host = mainActivity.getHost();
-        if(host == null) return;
-
-        VMixStatus vmixStatus = host.getStatus();
-        if(vmixStatus == null) return;
-
 
         List<Input> inputs = new ArrayList<>();
         for(int i = 0; i < vmixStatus.getNumberOfInputs(); i++) {
@@ -390,14 +355,14 @@ public class SettingsFragment extends Fragment {
             inputs.add(vmixStatus.getInput(i));
         } // end of for
 
-        ArrayAdapter<Input> dataAdapter = new ArrayAdapter<>(mainActivity, R.layout.input_spinner_item, inputs);
+        ArrayAdapter<Input> dataAdapter = new ArrayAdapter<>(getActivity(), R.layout.input_spinner_item, inputs);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         inputSpinner.setAdapter(dataAdapter);
     } // end of updateListOfInputs
 
 
-    public void hideKeyboard() {
+    private void hideKeyboard() {
 
-        mainActivity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     } // end of hideKeyboard
 } // end of SettingsFragment
