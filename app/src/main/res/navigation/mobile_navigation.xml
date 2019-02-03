@@ -21,6 +21,6 @@
         <action
             android:id="@+id/action_tally_pop_to_settings"
             app:popUpTo="@+id/settingsFragment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="false" />
     </fragment>
 </navigation>

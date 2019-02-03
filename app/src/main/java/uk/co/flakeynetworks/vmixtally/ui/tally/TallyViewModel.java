@@ -43,5 +43,10 @@ public class TallyViewModel extends AndroidViewModel {
     } // end of onCleared
 
 
+    public void cancelReconnect() { repository.cancelReconnectAttempt(); } // end of cancelReconnect
+
+
     LiveData<TallyInput> getInput() { return liveInput; } // end of getInput
+
+    public LiveData<Boolean> getIsReconnecting() { return repository.isAttemptingReconnect(); } // end of getIsReconnecting
 } // end of TallyViewModel

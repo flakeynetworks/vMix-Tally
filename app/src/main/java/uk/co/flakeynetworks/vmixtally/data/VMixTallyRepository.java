@@ -82,6 +82,10 @@ public class VMixTallyRepository implements TallyRepository {
 
 
     @Override
+    public LiveData<String> getErrorMessages() { return errorMessage; } // end of getErrorMessages
+
+
+    @Override
     public String getSavedHost() {
 
         // Get the value from shared preferences
@@ -157,9 +161,13 @@ public class VMixTallyRepository implements TallyRepository {
         } // end of if
 
         isAttemptingReconnect.postValue(false);
+
+        setTcpConnection(null);
+        setHost(null);
     } // end of cancelReconnect
 
 
+    @Override
     public void disconnectFromHost() {
 
         // Check If we were connected to another host before then disconnect.
@@ -234,7 +242,9 @@ public class VMixTallyRepository implements TallyRepository {
 
     private void showError(String message) {
 
-        // TODO Need to implement
+        if(message == null) return;
+
+        errorMessage.postValue(message);
     } // end of showError
 
 

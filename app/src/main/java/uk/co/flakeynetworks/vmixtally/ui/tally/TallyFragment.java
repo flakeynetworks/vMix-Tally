@@ -1,6 +1,7 @@
 package uk.co.flakeynetworks.vmixtally.ui.tally;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -21,18 +22,18 @@ import androidx.navigation.Navigation;
 import uk.co.flakeynetworks.vmixtally.R;
 import uk.co.flakeynetworks.vmixtally.ViewModelFactory;
 import uk.co.flakeynetworks.vmixtally.model.TallyInput;
+import uk.co.flakeynetworks.vmixtally.ui.dialog.ReconnectingDialog;
 
 /**
  * Created by Richard Stokes on 9/24/2018.
  */
-
-// TODO Maybe should change it so that the reconnecting screen is shown here before trying going back to the settings screen
 public class TallyFragment extends Fragment {
 
 
     private ImageView tallyColor;
     private TallyViewModel viewModel;
     private TallyInput currentInput;
+    private ReconnectingDialog reconnectingDialog;
 
 
     private TallyNavigation navigation = new TallyNavigation() {
@@ -88,6 +89,15 @@ public class TallyFragment extends Fragment {
             } // end of else
         });
 
+        // List for reconnecting
+        viewModel.getIsReconnecting().observe(this, truth -> {
+
+            if(truth)
+                // Show reconnecting
+                showReconnectingDialog();
+            else
+                removeReconnectingDialog();
+        });
 
         tallyColor = view.findViewById(R.id.tallyColor);
         tallyColor.setBackgroundColor(getResources().getColor(R.color.tallyNone));
@@ -96,6 +106,42 @@ public class TallyFragment extends Fragment {
 
         return view;
     } // end of onCreateView
+
+
+    private void removeReconnectingDialog() {
+
+        if(reconnectingDialog != null)
+            reconnectingDialog.cancel();
+    } // end of reconnected
+
+
+    private void showReconnectingDialog() {
+
+        // Means there is already one showing
+        if(reconnectingDialog != null) return;
+
+        DialogInterface.OnCancelListener listener = dialog -> {
+
+            if(reconnectingDialog == null) return;
+
+            if(reconnectingDialog.isShowing())
+                reconnectingDialog.dismiss();
+
+            reconnectingDialog = null;
+        };
+
+        reconnectingDialog = new ReconnectingDialog(getContext(), false, listener);
+        reconnectingDialog.setCancelAction(new ReconnectingDialog.CancelAction() {
+            @Override
+            public void execute() {
+
+                viewModel.cancelReconnect();
+                navigation.navigateToSettings();
+            } // end of execute
+        });
+
+        reconnectingDialog.show();
+    } // end of showReconnectingDialog
 
 
     @Override

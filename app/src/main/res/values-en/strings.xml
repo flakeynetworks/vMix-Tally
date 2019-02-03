@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="ok">OK</string>
-    <string name="connectingToServer">Connecting ...</string>
+    <string name="connectingToServer">Connecting …</string>
     <string name="tally_program">ON PROGRAM</string>
     <string name="tally_preview">ON PREVIEW</string>
     <string name="tally_none">STANDBY</string>
     <string name="settings_title">Settings</string>
     <string name="tally_colour">Tally Colour</string>
     <string name="help_menu_item">Help</string>
+    <string name="connect_button_text">Connect</string>
+    <string name="disconnect_button_text">Disconnect</string>
 </resources>

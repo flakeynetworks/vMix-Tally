@@ -1,6 +1,5 @@
 package uk.co.flakeynetworks.vmixtally.ui.settings;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -86,24 +85,7 @@ public class SettingsFragment extends Fragment {
 
         // Setup the connect button
         Button connectButton = view.findViewById(R.id.connectButton);
-        connectButton.setOnClickListener(v -> {
-
-            hideKeyboard();
-            showConnecting();
-
-            // Validate the port number
-            try {
-                int port = Integer.parseInt(portField.getText().toString());
-
-                if(port < 1 || port > 65535)
-                    throw new NumberFormatException();
-            } catch (NumberFormatException e) {
-                portField.setError("Invalid port number");
-            } // end of catch
-
-            // Attempt to connect to the vmix instance
-            viewModel.connectToHost(addressField.getText().toString(), Integer.parseInt(portField.getText().toString()));
-        });
+        connectButton.setOnClickListener(v -> connectButtonClicked());
 
         // Setup listening for changes in the host
         setupHostListening();
@@ -122,6 +104,53 @@ public class SettingsFragment extends Fragment {
 
         return view;
     } // end of onCreateView
+
+
+    private void connectButtonClicked() {
+
+        // Check if we are already connected in which case disconnect from host
+        if(viewModel.getTcpConnection().getValue() != null)
+            performDisconnectFromHost();
+        else
+            performConnectToHost();
+    } // end of connectButtonClicked
+
+
+    private void performDisconnectFromHost() {
+
+        viewModel.disconnectFromHost();
+    } // end of performDisconnectFromHost
+
+
+    private void performConnectToHost() {
+
+        hideKeyboard();
+        showConnecting();
+
+        // Validate the port number
+        try {
+            int port = Integer.parseInt(portField.getText().toString());
+
+            if(port < 1 || port > 65535)
+                throw new NumberFormatException();
+        } catch (NumberFormatException e) {
+            portField.setError("Invalid port number");
+        } // end of catch
+
+        // Attempt to connect to the vmix instance
+        viewModel.connectToHost(addressField.getText().toString(), Integer.parseInt(portField.getText().toString()));
+    } // end of performConnectToHost
+
+
+    private void showConnectingBox(boolean truth) {
+
+        LinearLayout connectingBox = getView().findViewById(R.id.connectingBox);
+
+        if(truth)
+            connectingBox.setVisibility(View.VISIBLE);
+        else
+            connectingBox.setVisibility(View.GONE);
+    } // end of showConnectingBox
 
 
     @Override
@@ -201,8 +230,7 @@ public class SettingsFragment extends Fragment {
                 ImageView cross = getView().findViewById(R.id.crossImage);
                 cross.setVisibility(View.VISIBLE);
 
-                ProgressBar progressbar = getView().findViewById(R.id.progressBar);
-                progressbar.setVisibility(View.GONE);
+                showConnectingBox(false);
 
                 TextView status = getView().findViewById(R.id.statusText);
                 status.setText(message);
@@ -232,19 +260,9 @@ public class SettingsFragment extends Fragment {
     private void showConnecting() {
 
         LinearLayout statusBox = getView().findViewById(R.id.statusBox);
-        statusBox.setVisibility(View.VISIBLE);
+        statusBox.setVisibility(View.GONE);
 
-        ImageView tick = getView().findViewById(R.id.tickImage);
-        tick.setVisibility(View.GONE);
-
-        ImageView cross = getView().findViewById(R.id.crossImage);
-        cross.setVisibility(View.GONE);
-
-        ProgressBar progressbar = getView().findViewById(R.id.progressBar);
-        progressbar.setVisibility(View.VISIBLE);
-
-        TextView status = getView().findViewById(R.id.statusText);
-        status.setText(R.string.connectingToServer);
+        showConnectingBox(true);
 
         Button connectButton = getView().findViewById(R.id.connectButton);
         connectButton.setEnabled(false);
@@ -259,11 +277,22 @@ public class SettingsFragment extends Fragment {
 
     private void hideConnectionSuccess() {
 
+        // Disable the details boxes
+        getView().findViewById(R.id.addressField).setEnabled(true);
+        getView().findViewById(R.id.portNumber).setEnabled(true);
+
+        Button connectButton = getView().findViewById(R.id.connectButton);
+        connectButton.setText(R.string.connect_button_text);
+        connectButton.setEnabled(true);
+
+
+        // Enable the details boxes
+        getView().findViewById(R.id.addressField).setEnabled(false);
+        getView().findViewById(R.id.portNumber).setEnabled(false);
+
         LinearLayout statusBox = getView().findViewById(R.id.statusBox);
         statusBox.setVisibility(View.GONE);
 
-        Button connectButton = getView().findViewById(R.id.connectButton);
-        connectButton.setEnabled(true);
 
         // Show the input box
         LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
@@ -277,8 +306,19 @@ public class SettingsFragment extends Fragment {
 
     private void showSuccess() {
 
+        // Disable the details boxes
+        getView().findViewById(R.id.addressField).setEnabled(false);
+        getView().findViewById(R.id.portNumber).setEnabled(false);
+
+        Button connectButton = getView().findViewById(R.id.connectButton);
+        connectButton.setText(R.string.disconnect_button_text);
+        connectButton.setEnabled(true);
+
+
         LinearLayout statusBox = getView().findViewById(R.id.statusBox);
         statusBox.setVisibility(View.VISIBLE);
+
+        showConnectingBox(false);
 
         ImageView tick = getView().findViewById(R.id.tickImage);
         tick.setVisibility(View.VISIBLE);
@@ -286,15 +326,8 @@ public class SettingsFragment extends Fragment {
         ImageView cross = getView().findViewById(R.id.crossImage);
         cross.setVisibility(View.GONE);
 
-        ProgressBar progressbar = getView().findViewById(R.id.progressBar);
-        progressbar.setVisibility(View.GONE);
-
         TextView status = getView().findViewById(R.id.statusText);
         status.setText("Connected");
-
-        Button connectButton = getView().findViewById(R.id.connectButton);
-        connectButton.setEnabled(true);
-
 
         // Setup the show tally button
         Button showTallyBtn = getView().findViewById(R.id.showTallyBtn);
@@ -353,6 +386,10 @@ public class SettingsFragment extends Fragment {
             if(changed)
                 updateListOfInputs();
         });
+
+
+        // Start listening for error messages
+        viewModel.getErrorMessages().observe(this, this::showError);
     } // end of setupHostListening
 
 

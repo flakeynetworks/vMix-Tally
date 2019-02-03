@@ -46,4 +46,9 @@ public class SettingsViewModel extends AndroidViewModel {
 
 
     public LiveData<TCPAPI> getTcpConnection() { return repository.getTcpConnection(); } // end of getTCPConnection
+
+
+    public void disconnectFromHost() { repository.disconnectFromHost(); } // end of disconnectFromHost
+
+    public LiveData<String> getErrorMessages() { return repository.getErrorMessages(); } // end of getErrorMessage
 } // end of SettingsViewModel

@@ -1,16 +1,17 @@
 <resources>
-    <string name="app_name">vMix Tally</string>
-    <string name="saved_host">lastVmixHost</string>
-    <string name="settingstitle">vMix Tally</string>
+    <string name="app_name" translatable="false">vMix Tally</string>
+    <string name="saved_host" translatable="false">lastVmixHost</string>
     <string name="ok">OK</string>
-    <string name="connectingToServer">Connecting ...</string>
+    <string name="connectingToServer">Connecting …</string>
     <string name="tally_program">ON PROGRAM</string>
     <string name="tally_preview">ON PREVIEW</string>
     <string name="tally_none">STANDBY</string>
-    <string name="default_port">8088</string>
-    <string name="youtube_how_to_url">https://youtu.be/s7P0CekCog8</string>
+    <string name="default_port" translatable="false">8088</string>
+    <string name="youtube_how_to_url" translatable="false">https://youtu.be/s7P0CekCog8</string>
     <string name="settings_title">Settings</string>
-    <string name="tally_colour">Tally Colour</string>
     <string name="help_menu_item">Help</string>
-    <string name="preference_file_key">vmix_tally_pref</string>
+    <string name="preference_file_key" translatable="false">vmix_tally_pref</string>
+    <string name="connect_button_text">Connect</string>
+    <string name="disconnect_button_text">Disconnect</string>
+    <string name="tally_colour">Tally Colour</string>
 </resources>

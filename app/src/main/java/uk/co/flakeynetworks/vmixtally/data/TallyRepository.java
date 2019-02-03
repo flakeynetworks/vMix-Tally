@@ -27,4 +27,8 @@ public interface TallyRepository {
 
     LiveData<Boolean> isAttemptingReconnect();
     void cancelReconnectAttempt();
+
+    void disconnectFromHost();
+
+    LiveData<String> getErrorMessages();
 } // end of TallyRespository
