@@ -16,6 +16,7 @@ import uk.co.flakeynetworks.vmix.api.TCPAPIListener;
 import uk.co.flakeynetworks.vmix.status.HostStatusChangeListener;
 import uk.co.flakeynetworks.vmix.status.Input;
 import uk.co.flakeynetworks.vmixtally.R;
+import uk.co.flakeynetworks.vmixtally.model.NullInput;
 
 public class VMixTallyRepository implements TallyRepository {
 
@@ -30,7 +31,14 @@ public class VMixTallyRepository implements TallyRepository {
     private final HostStatusChangeListener hostListener = new HostStatusChangeListener() {
 
         @Override
-        public void inputRemoved(Input input) { inputsChanged.postValue(true); } // end of inputRemoved
+        public void inputRemoved(Input input) {
+
+            inputsChanged.postValue(true);
+
+            // Check if the input was the currently set input. If so then remove it
+            if(currentInput.getValue() == input)
+                setCurrentInput(NullInput.getInstance());
+        } // end of inputRemoved
 
         @Override
         public void inputAdded(Input input) { inputsChanged.postValue(true); } // end of inputAdded
@@ -262,6 +270,7 @@ public class VMixTallyRepository implements TallyRepository {
                     } // end of if
 
                     setTcpConnection(tcpConnection);
+                    cancelReconnectAttempt();
 
                     return;
                 } // end of if

@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import io.reactivex.disposables.Disposable;
 import uk.co.flakeynetworks.vmixtally.data.TallyRepository;
+import uk.co.flakeynetworks.vmixtally.model.NullInput;
 import uk.co.flakeynetworks.vmixtally.model.TallyInput;
 
 public class TallyViewModel extends AndroidViewModel {
@@ -26,7 +27,10 @@ public class TallyViewModel extends AndroidViewModel {
         this.repository = repository;
         observerDisposable = repository.getCurrentInput().subscribe(input -> {
 
-            liveInput.postValue(new TallyInput(input));
+            if(input.equals(NullInput.getInstance()))
+                liveInput.postValue(null);
+            else
+                liveInput.postValue(new TallyInput(input));
         });
     } // end of constructor
 

@@ -19,8 +19,8 @@
         android:label="Tally"
         tools:layout="@layout/fragment_tally" >
         <action
-            android:id="@+id/action_tally_pop"
-            app:popUpTo="@id/tallyFragment"
+            android:id="@+id/action_tally_pop_to_settings"
+            app:popUpTo="@+id/settingsFragment"
             app:popUpToInclusive="true" />
     </fragment>
 </navigation>

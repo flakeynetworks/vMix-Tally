@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -24,6 +25,8 @@ import uk.co.flakeynetworks.vmixtally.model.TallyInput;
 /**
  * Created by Richard Stokes on 9/24/2018.
  */
+
+// TODO Maybe should change it so that the reconnecting screen is shown here before trying going back to the settings screen
 public class TallyFragment extends Fragment {
 
 
@@ -33,15 +36,19 @@ public class TallyFragment extends Fragment {
 
 
     private TallyNavigation navigation = new TallyNavigation() {
+
         @Override
         public void navigateToPreviewScreen() {
 
             // Pop back one
-            Navigation.findNavController(getView()).navigate(R.id.action_tally_pop);
-
-            // TODO need to find some way for the calling fragment to know the reason for the pop
-            // OR SHOULD WE HAVE THE DIALOG SHOW HERE!
+            Navigation.findNavController(getView()).navigate(R.id.action_tally_pop_to_settings);
         } // end of navigateToSettingsMenu
+
+        @Override
+        public void navigateToSettings() {
+
+            Navigation.findNavController(getView()).navigate(R.id.action_tally_pop_to_settings);
+        } // end of navigateToSettings
     };
 
 
@@ -74,6 +81,8 @@ public class TallyFragment extends Fragment {
             } else {
 
                 ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Tally");  // provide compatibility to all the versions
+
+                // Check if there was an input before this null
                 showInputRemovedDialog(oldInput);
                 navigation.navigateToPreviewScreen();
             } // end of else
@@ -95,6 +104,17 @@ public class TallyFragment extends Fragment {
         inflater.inflate(R.menu.tally_actionbar_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
     } // end of onCreateOptionsMenu
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if(item.getItemId() == R.id.settingsMenuItem)
+            navigation.navigateToSettings();
+
+        return super.onOptionsItemSelected(item);
+    } // end of onOptionsItemSelected
+
 
 
     private void showInputRemovedDialog(TallyInput oldInput) {

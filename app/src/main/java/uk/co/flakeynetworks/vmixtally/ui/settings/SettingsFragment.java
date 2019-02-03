@@ -1,5 +1,6 @@
 package uk.co.flakeynetworks.vmixtally.ui.settings;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -9,6 +10,7 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -28,6 +30,7 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.Navigation;
@@ -43,7 +46,6 @@ import uk.co.flakeynetworks.vmixtally.ui.dialog.ReconnectingDialog;
 
 public class SettingsFragment extends Fragment {
 
-
     private EditText addressField;
     private EditText portField;
 
@@ -57,6 +59,7 @@ public class SettingsFragment extends Fragment {
 
             Navigation.findNavController(getView()).navigate(R.id.action_settings_to_tally);
         } // end of showTally
+
 
         @Override
         public void showYouTubeHowToVideo() {
@@ -101,7 +104,7 @@ public class SettingsFragment extends Fragment {
             // Attempt to connect to the vmix instance
             viewModel.connectToHost(addressField.getText().toString(), Integer.parseInt(portField.getText().toString()));
         });
-        
+
         // Setup listening for changes in the host
         setupHostListening();
 
@@ -129,6 +132,16 @@ public class SettingsFragment extends Fragment {
     } // end of onCreateOptionsMenu
 
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if(item.getItemId() == R.id.menuItemHowToVideo)
+            navigator.showYouTubeHowToVideo();
+
+        return super.onOptionsItemSelected(item);
+    } // end of onOptionsItemSelected
+
+
     private void showReconnectingDialog() {
 
         // Means there is already one showing
@@ -136,7 +149,11 @@ public class SettingsFragment extends Fragment {
 
         DialogInterface.OnCancelListener listener = dialog -> {
 
-            reconnectingDialog.dismiss();
+            if(reconnectingDialog == null) return;
+
+            if(reconnectingDialog.isShowing())
+                reconnectingDialog.dismiss();
+
             reconnectingDialog = null;
         };
 
@@ -165,17 +182,9 @@ public class SettingsFragment extends Fragment {
 
         super.onResume();
 
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Settings");  // provide compatibility to all the versions
         hideKeyboard();
     } // end of onResume
-
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-
-        super.onViewCreated(view, savedInstanceState);
-
-        hideKeyboard();
-    } // end of onViewCreated
 
 
     private void showError(@NonNull String message) {
@@ -250,7 +259,19 @@ public class SettingsFragment extends Fragment {
 
     private void hideConnectionSuccess() {
 
-        // TODO implement at some point, not sure if this is a reachable state
+        LinearLayout statusBox = getView().findViewById(R.id.statusBox);
+        statusBox.setVisibility(View.GONE);
+
+        Button connectButton = getView().findViewById(R.id.connectButton);
+        connectButton.setEnabled(true);
+
+        // Show the input box
+        LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
+        inputLayout.setVisibility(View.GONE);
+
+        // Show the next box
+        LinearLayout nextBox = getView().findViewById(R.id.nextBox);
+        nextBox.setVisibility(View.GONE);
     } // end of hideConnectionSuccess
 
 
@@ -275,11 +296,6 @@ public class SettingsFragment extends Fragment {
         connectButton.setEnabled(true);
 
 
-        // Update the input spinner
-        LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
-        inputLayout.setVisibility(View.VISIBLE);
-
-
         // Setup the show tally button
         Button showTallyBtn = getView().findViewById(R.id.showTallyBtn);
         showTallyBtn.setOnClickListener(v -> {
@@ -293,6 +309,11 @@ public class SettingsFragment extends Fragment {
             // Load the activity
             navigator.showTally();
         });
+
+
+        // Show the input box
+        LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
+        inputLayout.setVisibility(View.VISIBLE);
 
 
         // Show the next box
