@@ -28,4 +28,5 @@
     <string name="vmix_address">vMix Address</string>
     <string name="error_tcp_connection_failed">Could not connect. Check address is correct and port %1$s is open</string>
     <string name="error_host_connection">Could not connect. Check that port %1$d is open</string>
+    <string name="error">error</string>
 </resources>

@@ -24,4 +24,5 @@
     <string name="vmix_address">vMix Dirección</string>
     <string name="error_tcp_connection_failed">No pudo conectar. Verifique la dirección es correcta y el puerto %1$s está abierto</string>
     <string name="error_host_connection">No pudo conectar. Compruebe que el puerto %1$d está abierto</string>
+    <string name="error">Error</string>
 </resources>
