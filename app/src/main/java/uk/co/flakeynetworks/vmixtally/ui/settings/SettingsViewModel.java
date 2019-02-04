@@ -13,22 +13,28 @@ import uk.co.flakeynetworks.vmixtally.model.ErrorMessage;
 
 public class SettingsViewModel extends AndroidViewModel {
 
-
     private final TallyRepository repository;
 
+    private String address;
+    private int port;
 
     public SettingsViewModel(@NonNull Application application, @NonNull TallyRepository repository) {
 
         super(application);
 
         this.repository = repository;
+        address = repository.getSavedHost();
+        port = repository.getSavedPort();
     } // end of constructor
 
 
-    String getSavedHost() { return repository.getSavedHost(); } // end of getSavedHost
+    public String getAddress() { return address; } // end of getAddress
+    public void setAddress(String address) { this.address = address; } // end of setAddress
 
+    public int getPort() { return port; } // end of getPort
+    public void setPort(int port) { this.port = port; } // end of setPort
 
-    void connectToHost(String address, int port) { repository.connectToHost(address, port); } // end of connectToHost
+    void connectToHost(int port) { repository.connectToHost(address, port); } // end of connectToHost
 
 
     void inputSelected(Input input) { repository.setCurrentInput(input); } // end of inputSelected

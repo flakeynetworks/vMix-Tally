@@ -83,6 +83,19 @@ public class VMixTallyRepository implements TallyRepository {
 
 
     @Override
+    public void savePort(int port) {
+
+        // Save to shared preferences
+        SharedPreferences sharedPref = application.getSharedPreferences(application.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(application.getString(R.string.saved_port), port);
+
+        editor.apply();
+    } // end of saveHost
+
+
+    @Override
     public LiveData<ErrorMessage> getErrorMessages() { return errorMessage; } // end of getErrorMessages
 
 
@@ -94,6 +107,16 @@ public class VMixTallyRepository implements TallyRepository {
 
         return sharedPref.getString(application.getString(R.string.saved_host), "");
     } // end of getSavedHost
+
+
+    @Override
+    public int getSavedPort() {
+
+        // Get the value from shared preferences
+        SharedPreferences sharedPref = application.getSharedPreferences(application.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+
+        return sharedPref.getInt(application.getString(R.string.saved_port), application.getResources().getInteger(R.integer.default_port));
+    } // end of getSavedPort
 
 
 
@@ -111,6 +134,7 @@ public class VMixTallyRepository implements TallyRepository {
 
             host.addListener(hostListener);
             saveHost(host.getAddress());
+            savePort(host.getPort());
         } // end of if
 
         // Update the current host

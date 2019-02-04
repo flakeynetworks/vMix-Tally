@@ -18,6 +18,9 @@ public interface TallyRepository {
     void saveHost(String address);
     String getSavedHost();
 
+    void savePort(int port);
+    int getSavedPort();
+
     // Current host connected to
     LiveData<VMixHost> getHost();
     void setHost(VMixHost host);

@@ -3,4 +3,5 @@
     <integer name="reconnectWaitPeriod">1000</integer>
     <integer name="timeout_value">10000</integer>
     <integer name="default_tcp_port">8099</integer>
+    <integer name="default_port">8088</integer>
 </resources>

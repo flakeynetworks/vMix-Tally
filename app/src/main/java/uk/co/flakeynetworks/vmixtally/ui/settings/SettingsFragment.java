@@ -29,6 +29,7 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.Navigation;
@@ -36,6 +37,7 @@ import uk.co.flakeynetworks.vmix.status.Input;
 import uk.co.flakeynetworks.vmix.status.VMixStatus;
 import uk.co.flakeynetworks.vmixtally.R;
 import uk.co.flakeynetworks.vmixtally.ViewModelFactory;
+import uk.co.flakeynetworks.vmixtally.databinding.FragmentSettingsBinding;
 import uk.co.flakeynetworks.vmixtally.model.ErrorMessage;
 import uk.co.flakeynetworks.vmixtally.ui.dialog.ReconnectingDialog;
 
@@ -71,16 +73,21 @@ public class SettingsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_settings, container, false);
+        //View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
         // Get the view model
         ViewModelFactory vmFactory = ViewModelFactory.getInstance(getActivity().getApplication());
         viewModel = ViewModelProviders.of(this, vmFactory).get(SettingsViewModel.class);
 
+        FragmentSettingsBinding binding = DataBindingUtil.inflate(inflater, R.layout.fragment_settings, container, false);
+        View view = binding.getRoot();
+
+        binding.setViewmodel(viewModel);
+
+
         // Set the address field & port field
         addressField = view.findViewById(R.id.addressField);
-        addressField.setText(viewModel.getSavedHost());
-        addressField.setSelection(addressField.getText().toString().length());
+        //addressField.setSelection(addressField.getText().toString().length());
         portField = view.findViewById(R.id.portNumber);
 
         // Setup the connect button
@@ -147,7 +154,7 @@ public class SettingsFragment extends Fragment {
         showConnecting();
 
         // Attempt to connect to the vmix instance
-        viewModel.connectToHost(addressField.getText().toString(), Integer.parseInt(portField.getText().toString()));
+        viewModel.connectToHost(Integer.parseInt(portField.getText().toString()));
     } // end of performConnectToHost
 
 
