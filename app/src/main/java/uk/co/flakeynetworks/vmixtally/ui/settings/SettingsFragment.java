@@ -201,7 +201,7 @@ public class SettingsFragment extends Fragment {
 
     private void removeReconnectingDialog() {
 
-        if(reconnectingDialog != null)
+        if(reconnectingDialog != null && reconnectingDialog.isShowing())
             reconnectingDialog.cancel();
     } // end of reconnected
 
@@ -271,6 +271,7 @@ public class SettingsFragment extends Fragment {
 
         Button connectButton = getView().findViewById(R.id.connectButton);
         connectButton.setEnabled(false);
+        connectButton.setClickable(false);
 
         LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
         inputLayout.setVisibility(View.GONE);
@@ -289,6 +290,7 @@ public class SettingsFragment extends Fragment {
         Button connectButton = getView().findViewById(R.id.connectButton);
         connectButton.setText(R.string.connect_button_text);
         connectButton.setEnabled(true);
+        connectButton.setClickable(true);
 
 
         // Enable the details boxes
@@ -318,6 +320,7 @@ public class SettingsFragment extends Fragment {
         Button connectButton = getView().findViewById(R.id.connectButton);
         connectButton.setText(R.string.disconnect_button_text);
         connectButton.setEnabled(true);
+        connectButton.setClickable(true);
 
 
         LinearLayout statusBox = getView().findViewById(R.id.statusBox);

@@ -110,7 +110,7 @@ public class TallyFragment extends Fragment {
 
     private void removeReconnectingDialog() {
 
-        if(reconnectingDialog != null)
+        if(reconnectingDialog != null && reconnectingDialog.isShowing())
             reconnectingDialog.cancel();
     } // end of reconnected
 
