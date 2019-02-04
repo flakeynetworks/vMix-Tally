@@ -171,11 +171,11 @@ public class TallyFragment extends Fragment {
         else
             builder = new AlertDialog.Builder(getContext());
 
-        String oldInputName = "Input";
+        String oldInputName = getString(R.string.default_input_name);
         if(oldInput != null) oldInputName = oldInput.getInput().getName();
 
-        builder.setTitle("Input removed")
-                .setMessage(oldInputName + " was removed.")
+        builder.setTitle(R.string.dialog_input_removed_title)
+                .setMessage(getString(R.string.inputRemovedText, oldInputName))
                 .setPositiveButton(R.string.ok, (dialog, which) -> {
                 })
 

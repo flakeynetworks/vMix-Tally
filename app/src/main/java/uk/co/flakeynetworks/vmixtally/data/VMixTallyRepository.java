@@ -211,7 +211,7 @@ public class VMixTallyRepository implements TallyRepository {
                     host = new VMixHost(address, port);
                 } catch (NumberFormatException e) {
 
-                    showError("Error! Invalid Port Number");
+                    showError(application.getString(R.string.error_invalid_port));
                     return;
                 } // end of catch
 
@@ -223,7 +223,10 @@ public class VMixTallyRepository implements TallyRepository {
                 // Connect tp the tcp api
                 if (!tcpConnection.connect()) {
 
-                    showError("Could not connect. Check address is correct and port 8099 is open");
+                    //Could not connect. Check address is correct and port 8099 is open
+                    int defaultTCPPort = application.getResources().getInteger(R.integer.default_tcp_port);
+
+                    showError(application.getString(R.string.error_tcp_connection_failed, String.valueOf(defaultTCPPort)));
                     tcpConnection.close();
                     return;
                 } // end of if
@@ -232,7 +235,7 @@ public class VMixTallyRepository implements TallyRepository {
                 // Get an update via the web api
                 if (!host.update()) {
 
-                    showError("Could not connect. Check that port " + host.getPort() + " is open.");
+                    showError(application.getString(R.string.error_host_connection, host.getPort()));
                     tcpConnection.close();
                     return;
                 } // end of if
@@ -241,7 +244,7 @@ public class VMixTallyRepository implements TallyRepository {
                 setTcpConnection(tcpConnection);
             } catch (MalformedURLException e) {
 
-                showError("Invalid Address");
+                showError(application.getString(R.string.error_invalid_address));
             } // end of catch
         }).start();
     } // end of connectToHost

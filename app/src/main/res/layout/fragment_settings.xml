@@ -43,7 +43,7 @@
                             android:id="@+id/textView2"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="vMix Address"
+                            android:text="@string/vmix_address"
                             android:textColor="@android:color/white" />
 
                         <EditText
@@ -52,7 +52,7 @@
                             android:layout_height="wrap_content"
                             android:backgroundTint="@color/foreground"
                             android:ems="10"
-                            android:hint="vMix Address"
+                            android:hint="@string/vmix_address"
                             android:inputType="textPersonName"
                             android:textColor="@android:color/white" />
 
@@ -68,7 +68,7 @@
                             android:id="@+id/textView3"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Port"
+                            android:text="@string/port"
                             android:textColor="@color/foreground"
                             tools:text="Port" />
 
@@ -164,7 +164,7 @@
                     android:id="@+id/textView4"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Select Input"
+                    android:text="@string/select_input"
                     android:textColor="@android:color/white" />
 
                 <Spinner
@@ -188,10 +188,8 @@
                     android:id="@+id/showTallyBtn"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Show Tally" />
+                    android:text="@string/show_tally" />
             </LinearLayout>
-
         </LinearLayout>
     </ScrollView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

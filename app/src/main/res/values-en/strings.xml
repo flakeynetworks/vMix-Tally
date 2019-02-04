@@ -10,4 +10,18 @@
     <string name="help_menu_item">Help</string>
     <string name="connect_button_text">Connect</string>
     <string name="disconnect_button_text">Disconnect</string>
+    <string name="error_invalid_port">Invalid port number</string>
+    <string name="error_invalid_address">Invalid address</string>
+    <string name="connected">Connected</string>
+    <string name="dialog_input_removed_title">Input removed</string>
+    <string name="inputRemovedText">%1$s was removed</string>
+    <string name="default_input_name">Input</string>
+    <string name="reconnecting">Reconnecting …</string>
+    <string name="Cancel">Cancel</string>
+    <string name="port">Port</string>
+    <string name="select_input">Select Input</string>
+    <string name="show_tally">Show Tally</string>
+    <string name="vmix_address">vMix Address</string>
+    <string name="error_tcp_connection_failed">Could not connect. Check address is correct and port %1$s is open</string>
+    <string name="error_host_connection">Could not connect. Check that port %1$d is open</string>
 </resources>

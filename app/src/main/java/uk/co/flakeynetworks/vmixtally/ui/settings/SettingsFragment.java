@@ -124,8 +124,13 @@ public class SettingsFragment extends Fragment {
 
     private void performConnectToHost() {
 
-        hideKeyboard();
-        showConnecting();
+        // Validate the address
+        String addressText = addressField.getText().toString();
+        //noinspection ConstantConditions
+        if(addressText == null || addressText.isEmpty()) {
+            addressField.setError(getString(R.string.error_invalid_address));
+            return;
+        } // end of if
 
         // Validate the port number
         try {
@@ -134,8 +139,12 @@ public class SettingsFragment extends Fragment {
             if(port < 1 || port > 65535)
                 throw new NumberFormatException();
         } catch (NumberFormatException e) {
-            portField.setError("Invalid port number");
+            portField.setError(getString(R.string.error_invalid_port));
+            return;
         } // end of catch
+
+        hideKeyboard();
+        showConnecting();
 
         // Attempt to connect to the vmix instance
         viewModel.connectToHost(addressField.getText().toString(), Integer.parseInt(portField.getText().toString()));
@@ -211,7 +220,7 @@ public class SettingsFragment extends Fragment {
 
         super.onResume();
 
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Settings");  // provide compatibility to all the versions
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(getString(R.string.settings_title));  // provide compatibility to all the versions
         hideKeyboard();
     } // end of onResume
 
@@ -271,7 +280,6 @@ public class SettingsFragment extends Fragment {
 
         Button connectButton = getView().findViewById(R.id.connectButton);
         connectButton.setEnabled(false);
-        connectButton.setClickable(false);
 
         LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
         inputLayout.setVisibility(View.GONE);
@@ -289,13 +297,7 @@ public class SettingsFragment extends Fragment {
 
         Button connectButton = getView().findViewById(R.id.connectButton);
         connectButton.setText(R.string.connect_button_text);
-        connectButton.setEnabled(true);
-        connectButton.setClickable(true);
 
-
-        // Enable the details boxes
-        getView().findViewById(R.id.addressField).setEnabled(true);
-        getView().findViewById(R.id.portNumber).setEnabled(true);
 
         LinearLayout statusBox = getView().findViewById(R.id.statusBox);
         statusBox.setVisibility(View.GONE);
@@ -320,7 +322,6 @@ public class SettingsFragment extends Fragment {
         Button connectButton = getView().findViewById(R.id.connectButton);
         connectButton.setText(R.string.disconnect_button_text);
         connectButton.setEnabled(true);
-        connectButton.setClickable(true);
 
 
         LinearLayout statusBox = getView().findViewById(R.id.statusBox);
@@ -335,7 +336,7 @@ public class SettingsFragment extends Fragment {
         cross.setVisibility(View.GONE);
 
         TextView status = getView().findViewById(R.id.statusText);
-        status.setText("Connected");
+        status.setText(R.string.connected);
 
         // Setup the show tally button
         Button showTallyBtn = getView().findViewById(R.id.showTallyBtn);
