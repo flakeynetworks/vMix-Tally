@@ -11,7 +11,11 @@
         tools:layout="@layout/fragment_settings">
         <action
             android:id="@+id/action_settings_to_tally"
-            app:destination="@id/tallyFragment" />
+            app:destination="@id/tallyFragment"
+            app:enterAnim="@anim/animation_enter_from_right"
+            app:exitAnim="@anim/animation_exit_to_left"
+            app:popEnterAnim="@anim/animation_enter_from_left"
+            app:popExitAnim="@anim/animation_exit_to_right" />
     </fragment>
     <fragment
         android:id="@+id/tallyFragment"
