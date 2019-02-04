@@ -5,6 +5,7 @@ import io.reactivex.Observable;
 import uk.co.flakeynetworks.vmix.VMixHost;
 import uk.co.flakeynetworks.vmix.api.TCPAPI;
 import uk.co.flakeynetworks.vmix.status.Input;
+import uk.co.flakeynetworks.vmixtally.model.ErrorMessage;
 
 public interface TallyRepository {
 
@@ -30,5 +31,5 @@ public interface TallyRepository {
 
     void disconnectFromHost();
 
-    LiveData<String> getErrorMessages();
+    LiveData<ErrorMessage> getErrorMessages();
 } // end of TallyRespository

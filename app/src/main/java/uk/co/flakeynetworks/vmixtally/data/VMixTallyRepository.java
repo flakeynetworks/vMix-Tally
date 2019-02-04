@@ -16,6 +16,7 @@ import uk.co.flakeynetworks.vmix.api.TCPAPIListener;
 import uk.co.flakeynetworks.vmix.status.HostStatusChangeListener;
 import uk.co.flakeynetworks.vmix.status.Input;
 import uk.co.flakeynetworks.vmixtally.R;
+import uk.co.flakeynetworks.vmixtally.model.ErrorMessage;
 import uk.co.flakeynetworks.vmixtally.model.NullInput;
 
 public class VMixTallyRepository implements TallyRepository {
@@ -25,7 +26,7 @@ public class VMixTallyRepository implements TallyRepository {
     private final MutableLiveData<VMixHost> currentHost = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isAttemptingReconnect = new MutableLiveData<>(false);
     private final MutableLiveData<TCPAPI> tcpConnection = new MutableLiveData<>(null);
-    private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
+    private final MutableLiveData<ErrorMessage> errorMessage = new MutableLiveData<>();
     private final MutableLiveData<Boolean> inputsChanged = new MutableLiveData<>(false);
 
     private final HostStatusChangeListener hostListener = new HostStatusChangeListener() {
@@ -82,7 +83,7 @@ public class VMixTallyRepository implements TallyRepository {
 
 
     @Override
-    public LiveData<String> getErrorMessages() { return errorMessage; } // end of getErrorMessages
+    public LiveData<ErrorMessage> getErrorMessages() { return errorMessage; } // end of getErrorMessages
 
 
     @Override
@@ -151,6 +152,12 @@ public class VMixTallyRepository implements TallyRepository {
         reconnectingThread = new ReconnectThread();
         reconnectingThread.start();
     } // end of tcpConnectionClosed
+
+
+    private void reconnectCompleted() {
+
+        isAttemptingReconnect.postValue(false);
+    } // end of reconnectCompleted
 
 
     public void cancelReconnectAttempt() {
@@ -244,7 +251,7 @@ public class VMixTallyRepository implements TallyRepository {
 
         if(message == null) return;
 
-        errorMessage.postValue(message);
+        errorMessage.postValue(new ErrorMessage(message));
     } // end of showError
 
 
@@ -280,7 +287,7 @@ public class VMixTallyRepository implements TallyRepository {
                     } // end of if
 
                     setTcpConnection(tcpConnection);
-                    cancelReconnectAttempt();
+                    reconnectCompleted();
 
                     return;
                 } // end of if

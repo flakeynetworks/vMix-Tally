@@ -9,6 +9,7 @@ import uk.co.flakeynetworks.vmix.VMixHost;
 import uk.co.flakeynetworks.vmix.api.TCPAPI;
 import uk.co.flakeynetworks.vmix.status.Input;
 import uk.co.flakeynetworks.vmixtally.data.TallyRepository;
+import uk.co.flakeynetworks.vmixtally.model.ErrorMessage;
 
 public class SettingsViewModel extends AndroidViewModel {
 
@@ -50,5 +51,6 @@ public class SettingsViewModel extends AndroidViewModel {
 
     public void disconnectFromHost() { repository.disconnectFromHost(); } // end of disconnectFromHost
 
-    public LiveData<String> getErrorMessages() { return repository.getErrorMessages(); } // end of getErrorMessage
+
+    public LiveData<ErrorMessage> getErrorMessages() { return repository.getErrorMessages(); } // end of getErrorMessage
 } // end of SettingsViewModel

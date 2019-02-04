@@ -18,7 +18,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -37,6 +36,7 @@ import uk.co.flakeynetworks.vmix.status.Input;
 import uk.co.flakeynetworks.vmix.status.VMixStatus;
 import uk.co.flakeynetworks.vmixtally.R;
 import uk.co.flakeynetworks.vmixtally.ViewModelFactory;
+import uk.co.flakeynetworks.vmixtally.model.ErrorMessage;
 import uk.co.flakeynetworks.vmixtally.ui.dialog.ReconnectingDialog;
 
 /**
@@ -216,7 +216,10 @@ public class SettingsFragment extends Fragment {
     } // end of onResume
 
 
-    private void showError(@NonNull String message) {
+    private void showError(@NonNull ErrorMessage message) {
+
+        // Check to see if this message is valid
+        if(message == null || message.hasBeenDisplayed()) return;
 
         new Handler(Looper.getMainLooper()).post(() -> {
 
@@ -233,7 +236,7 @@ public class SettingsFragment extends Fragment {
                 showConnectingBox(false);
 
                 TextView status = getView().findViewById(R.id.statusText);
-                status.setText(message);
+                status.setText(message.toString());
 
                 Button connectButton = getView().findViewById(R.id.connectButton);
                 connectButton.setEnabled(true);
@@ -243,9 +246,11 @@ public class SettingsFragment extends Fragment {
 
                 LinearLayout nextBox = getView().findViewById(R.id.nextBox);
                 nextBox.setVisibility(View.GONE);
+
+                message.setHasBeenDisplayed();
             } catch(NullPointerException e) {
 
-                Crashlytics.setString("Dialog Error Message", message);
+                Crashlytics.setString("Dialog Error Message", message.toString());
                 if(getView() != null)
                     Crashlytics.setString("View Object", getView().toString());
                 else
@@ -287,8 +292,8 @@ public class SettingsFragment extends Fragment {
 
 
         // Enable the details boxes
-        getView().findViewById(R.id.addressField).setEnabled(false);
-        getView().findViewById(R.id.portNumber).setEnabled(false);
+        getView().findViewById(R.id.addressField).setEnabled(true);
+        getView().findViewById(R.id.portNumber).setEnabled(true);
 
         LinearLayout statusBox = getView().findViewById(R.id.statusBox);
         statusBox.setVisibility(View.GONE);
