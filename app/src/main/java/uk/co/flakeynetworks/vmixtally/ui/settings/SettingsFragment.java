@@ -15,13 +15,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
-import android.widget.TextView;
-
-import com.crashlytics.android.Crashlytics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,9 +41,6 @@ import uk.co.flakeynetworks.vmixtally.ui.dialog.ReconnectingDialog;
 
 public class SettingsFragment extends Fragment {
 
-    private EditText addressField;
-    private EditText portField;
-
     private ReconnectingDialog reconnectingDialog;
 
     private SettingsViewModel viewModel;
@@ -73,8 +64,6 @@ public class SettingsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        //View view = inflater.inflate(R.layout.fragment_settings, container, false);
-
         // Get the view model
         ViewModelFactory vmFactory = ViewModelFactory.getInstance(getActivity().getApplication());
         viewModel = ViewModelProviders.of(this, vmFactory).get(SettingsViewModel.class);
@@ -83,16 +72,9 @@ public class SettingsFragment extends Fragment {
         View view = binding.getRoot();
 
         binding.setViewmodel(viewModel);
+        binding.setController(this);
+        binding.setLifecycleOwner(this);
 
-
-        // Set the address field & port field
-        addressField = view.findViewById(R.id.addressField);
-        //addressField.setSelection(addressField.getText().toString().length());
-        portField = view.findViewById(R.id.portNumber);
-
-        // Setup the connect button
-        Button connectButton = view.findViewById(R.id.connectButton);
-        connectButton.setOnClickListener(v -> connectButtonClicked());
 
         // Setup listening for changes in the host
         setupHostListening();
@@ -113,7 +95,7 @@ public class SettingsFragment extends Fragment {
     } // end of onCreateView
 
 
-    private void connectButtonClicked() {
+    public void connectButtonClicked() {
 
         // Check if we are already connected in which case disconnect from host
         if(viewModel.getTcpConnection().getValue() != null)
@@ -132,41 +114,19 @@ public class SettingsFragment extends Fragment {
     private void performConnectToHost() {
 
         // Validate the address
-        String addressText = addressField.getText().toString();
-        //noinspection ConstantConditions
-        if(addressText == null || addressText.isEmpty()) {
-            addressField.setError(getString(R.string.error_invalid_address));
+        if(!viewModel.isAddressValid())
             return;
-        } // end of if
 
         // Validate the port number
-        try {
-            int port = Integer.parseInt(portField.getText().toString());
-
-            if(port < 1 || port > 65535)
-                throw new NumberFormatException();
-        } catch (NumberFormatException e) {
-            portField.setError(getString(R.string.error_invalid_port));
+        if(!viewModel.isPortValid())
             return;
-        } // end of catch
 
         hideKeyboard();
         showConnecting();
 
         // Attempt to connect to the vmix instance
-        viewModel.connectToHost(Integer.parseInt(portField.getText().toString()));
+        viewModel.connectToHost();
     } // end of performConnectToHost
-
-
-    private void showConnectingBox(boolean truth) {
-
-        LinearLayout connectingBox = getView().findViewById(R.id.connectingBox);
-
-        if(truth)
-            connectingBox.setVisibility(View.VISIBLE);
-        else
-            connectingBox.setVisibility(View.GONE);
-    } // end of showConnectingBox
 
 
     @Override
@@ -239,111 +199,60 @@ public class SettingsFragment extends Fragment {
 
         new Handler(Looper.getMainLooper()).post(() -> {
 
-            try {
-                LinearLayout statusBox = getView().findViewById(R.id.statusBox);
-                statusBox.setVisibility(View.VISIBLE);
+            viewModel.displayConnectingBox(false);
+            viewModel.displayStatusBox(true);
+            viewModel.displayTick(false);
+            viewModel.displayCross(true);
+            viewModel.setStatusText(message.toString());
+            viewModel.setConnectButtonEnabled(true);
+            viewModel.displayInputs(false);
+            viewModel.displayNextButton(false);
 
-                ImageView tick = getView().findViewById(R.id.tickImage);
-                tick.setVisibility(View.GONE);
-
-                ImageView cross = getView().findViewById(R.id.crossImage);
-                cross.setVisibility(View.VISIBLE);
-
-                showConnectingBox(false);
-
-                TextView status = getView().findViewById(R.id.statusText);
-                status.setText(message.toString());
-
-                Button connectButton = getView().findViewById(R.id.connectButton);
-                connectButton.setEnabled(true);
-
-                LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
-                inputLayout.setVisibility(View.GONE);
-
-                LinearLayout nextBox = getView().findViewById(R.id.nextBox);
-                nextBox.setVisibility(View.GONE);
-
-                message.setHasBeenDisplayed();
-            } catch(NullPointerException e) {
-
-                Crashlytics.setString("Dialog Error Message", message.toString());
-                if(getView() != null)
-                    Crashlytics.setString("View Object", getView().toString());
-                else
-                    Crashlytics.setString("View Object", "null");
-
-                Crashlytics.logException(e);
-            } // end of catch
+            message.setHasBeenDisplayed();
         });
     } // end of showError
 
 
     private void showConnecting() {
 
-        LinearLayout statusBox = getView().findViewById(R.id.statusBox);
-        statusBox.setVisibility(View.GONE);
-
-        showConnectingBox(true);
-
-        Button connectButton = getView().findViewById(R.id.connectButton);
-        connectButton.setEnabled(false);
-
-        LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
-        inputLayout.setVisibility(View.GONE);
-
-        LinearLayout nextBox = getView().findViewById(R.id.nextBox);
-        nextBox.setVisibility(View.GONE);
+        viewModel.displayConnectingBox(true);
+        viewModel.displayStatusBox(false);
+        viewModel.setConnectButtonEnabled(false);
+        viewModel.displayInputs(false);
+        viewModel.displayNextButton(false);
     } // end of showConnecting
 
 
     private void hideConnectionSuccess() {
 
-        // Disable the details boxes
-        getView().findViewById(R.id.addressField).setEnabled(true);
-        getView().findViewById(R.id.portNumber).setEnabled(true);
+        // Enable the details boxes
+        viewModel.setAddressEnabled(true);
+        viewModel.setPortEnabled(true);
 
-        Button connectButton = getView().findViewById(R.id.connectButton);
-        connectButton.setText(R.string.connect_button_text);
+        viewModel.setConnectButtonText(getString(R.string.connect_button_text));
 
-
-        LinearLayout statusBox = getView().findViewById(R.id.statusBox);
-        statusBox.setVisibility(View.GONE);
-
-
-        // Show the input box
-        LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
-        inputLayout.setVisibility(View.GONE);
-
-        // Show the next box
-        LinearLayout nextBox = getView().findViewById(R.id.nextBox);
-        nextBox.setVisibility(View.GONE);
+        viewModel.displayStatusBox(false);
+        viewModel.displayInputs(false);
+        viewModel.displayNextButton(false);
     } // end of hideConnectionSuccess
 
 
     private void showSuccess() {
 
         // Disable the details boxes
-        getView().findViewById(R.id.addressField).setEnabled(false);
-        getView().findViewById(R.id.portNumber).setEnabled(false);
+        viewModel.setAddressEnabled(false);
+        viewModel.setPortEnabled(false);
 
-        Button connectButton = getView().findViewById(R.id.connectButton);
-        connectButton.setText(R.string.disconnect_button_text);
-        connectButton.setEnabled(true);
+        viewModel.setConnectButtonText(getString(R.string.disconnect_button_text));
 
+        viewModel.setConnectButtonEnabled(true);
 
-        LinearLayout statusBox = getView().findViewById(R.id.statusBox);
-        statusBox.setVisibility(View.VISIBLE);
+        viewModel.displayConnectingBox(false);
+        viewModel.displayStatusBox(true);
 
-        showConnectingBox(false);
-
-        ImageView tick = getView().findViewById(R.id.tickImage);
-        tick.setVisibility(View.VISIBLE);
-
-        ImageView cross = getView().findViewById(R.id.crossImage);
-        cross.setVisibility(View.GONE);
-
-        TextView status = getView().findViewById(R.id.statusText);
-        status.setText(R.string.connected);
+        viewModel.displayTick(true);
+        viewModel.displayCross(false);
+        viewModel.setStatusText(getString(R.string.connected));
 
         // Setup the show tally button
         Button showTallyBtn = getView().findViewById(R.id.showTallyBtn);
@@ -359,15 +268,8 @@ public class SettingsFragment extends Fragment {
             navigator.showTally();
         });
 
-
-        // Show the input box
-        LinearLayout inputLayout = getView().findViewById(R.id.inputBox);
-        inputLayout.setVisibility(View.VISIBLE);
-
-
-        // Show the next box
-        LinearLayout nextBox = getView().findViewById(R.id.nextBox);
-        nextBox.setVisibility(View.VISIBLE);
+        viewModel.displayInputs(true);
+        viewModel.displayNextButton(true);
 
         hideKeyboard();
     } // end of showSuccess
